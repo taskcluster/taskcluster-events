@@ -30,7 +30,7 @@ var launch = function(profile) {
     });
 
     // Serve static content from assets/
-    app.use('/assets', express.static(path.join(__dirname, 'assets')));
+    app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
     // Create server
     return app.createServer().then(function(server) {
