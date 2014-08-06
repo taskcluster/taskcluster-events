@@ -20,9 +20,6 @@ module.exports = {
 
     // Trust a forwarding proxy
     trustProxy:                     false,
-
-    // Secret used to signed cookies
-    cookieSecret:                   'Warn, if no secret is used on production'
   },
 
   // AMQP configuration
