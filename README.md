@@ -41,7 +41,7 @@ listener.addEventsListener('error', function(error) {
 
 // Listen for listener closure
 listener.addEventsListener('close', function() {
-  // Listener is now closed for some reasons
+  // Listener is now closed for some reason
 });
 
 // Close listener
