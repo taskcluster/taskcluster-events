@@ -4,6 +4,7 @@ var path    = require('path');
 var debug   = require('debug')('events:bin:server');
 var Promise = require('promise');
 var socket  = require('../events/socket');
+var express = require('express');
 
 /** Launch server */
 var launch = function(profile) {

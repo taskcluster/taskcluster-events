@@ -3,6 +3,7 @@ var sockjs      = require('sockjs');
 var taskcluster = require('taskcluster-client');
 var debug       = require('debug')('events:socket');
 var urljoin     = require('url-join');
+var assert      = require('assert');
 
 /**
  */
