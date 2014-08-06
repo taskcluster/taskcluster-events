@@ -1,0 +1,30 @@
+{
+  "name":         "taskcluster-events",
+  "version":      "0.1.0",
+  "private":      true,
+  "author":       "Jonas Finnemann Jensen <jopsen@gmail.com>",
+  "description":  "Proxy for sending AMQP events over sockjs",
+  "license":      "MPL-2.0",
+  "scripts": {
+    "test":       "./test/runtests.sh"
+  },
+  "repository": {
+    "type":       "git",
+    "url":        "https://github.com/taskcluster/taskcluster-client.git"
+  },
+  "dependencies": {
+    "lodash":                           "2.4.1",
+    "debug":                            "0.7.4",
+    "taskcluster-client":               "0.12.4",
+    "taskcluster-base":                 "0.3.4",
+    "promise":                          "5.0.0",
+    "sockjs":                           "0.3.9",
+    "url-join":                         "0.0.1",
+    "express":                          "4.2.0"
+  },
+  "devDependencies": {
+    "slugid":                           "1.0.1",
+    "sockjs-client-node":               "0.1.1",
+    "mocha":                            "1.18.2"
+  }
+}
