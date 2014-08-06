@@ -5,8 +5,11 @@ This allows browser client to bind to AMQP exchanges listed in
 `taskcluster-client` and listen for events over a SockJS backed websocket.
 
 ```html
-<script src="events.taskcluster.net/assets/v1/sock.js"></script>
-<script src="events.taskcluster.net/assets/v1/listener.js"></script>
+<!-- Include sockjs and listener from events.taskcluster.net -->
+<script src="https://events.taskcluster.net/assets/v1/sock.js"></script>
+<script src="https://events.taskcluster.net/assets/v1/listener.js"></script>
+
+<!-- Include taskcluster-client from somewhere -->
 <script src="/.../taskcluster-client.js"></script>
 
 <script>
