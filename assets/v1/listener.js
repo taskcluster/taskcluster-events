@@ -58,7 +58,7 @@ Listener.prototype.addEventListener = function(event, handler) {
   }
 
   // Check if handler isn't already registered
-  if (handlers.indexOf(handler) !== -1) {
+  if (handlers.indexOf(handler) === -1) {
     handlers.push(handler);
   }
 };
