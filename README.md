@@ -18,7 +18,10 @@ var queueEvents = new taskcluster.QueueEvents();
 
 // Create listener
 var listener = new Listener();
-listener.addEventListener('open', function() {
+
+// Wait for listener to be ready, this implies that AMQP queue have been
+// created server-side
+listener.addEventListener('ready', function() {
   // Bind to task-completed exchange with binding key for a specific taskId
   listener.bind(queueEvents.taskCompleted({
     taskId:   "<myTaskId>"
