@@ -23,6 +23,7 @@ exports.create = function(httpServer, options) {
     queueEvents.taskDefined().exchange,
     queueEvents.taskPending().exchange,
     queueEvents.taskRunning().exchange,
+    queueEvents.artifactCreated().exchange,
     queueEvents.taskCompleted().exchange,
     queueEvents.taskFailed().exchange,
     schedulerEvents.taskGraphRunning().exchange,
