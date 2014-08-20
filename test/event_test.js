@@ -124,7 +124,7 @@ suite('event', function() {
         schedulerId:      "dummy-test-scheduler",
         taskGroupId:      taskId,
         scopes:           [],
-        routing:          "",
+        routes:           [],
         retries:          3,
         priority:         5,
         created:          (new Date()).toJSON(),
