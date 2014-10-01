@@ -1,1 +1,2 @@
-taskcluster-events.conf.json
+/taskcluster-events.conf.json
+/node_modules/
