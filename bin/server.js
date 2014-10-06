@@ -13,6 +13,7 @@ var launch = function(profile) {
     defaults:     require('../config/defaults'),
     profile:      require('../config/' + profile),
     envs:         [
+      'influx_connectionString',
       'amqp_url'
     ],
     filename:     'taskcluster-events'
