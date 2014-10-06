@@ -2,6 +2,6 @@
 # USAGE: Run this file using `npm test` (must run from repository root)
 
 
-mocha                                 \
+mocha                               \
   test/event_test.js                \
   ;

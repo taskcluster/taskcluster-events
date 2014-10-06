@@ -11,7 +11,7 @@ suite('event', function() {
   // Load configuration
   var cfg = base.config({
     defaults:     require('../config/defaults'),
-    profile:      require('../config/test'),
+    profile:      require('../config/localhost'),
     envs:         [
       'taskcluster_credentials_clientId',     // Only for testing
       'taskcluster_credentials_accessToken',  // Only for testing
@@ -30,7 +30,7 @@ suite('event', function() {
   var server = null;
   var ready = null;
   setup(function() {
-    return launch('test').then(function(server_) {
+    return launch('localhost').then(function(server_) {
       server = server_;
     }).then(function() {
       socket = new SockJS('http://localhost:60002/v1/listen');
@@ -38,8 +38,9 @@ suite('event', function() {
         socket.addEventListener('open', function() {
           debug('open');
           socket.addEventListener('message', function(e) {
+            debug("got message: %s", e.data);
             var message = JSON.parse(e.data);
-            if (JSON.parse(e.data).method === 'ready') {
+            if (JSON.parse(e.data).event === 'ready') {
               accept();
             }
           });
@@ -64,25 +65,32 @@ suite('event', function() {
   });
 
   test('bind', function() {
+    var reqId = slugid.v4();
     var bound = new Promise(function(accept, reject) {
       socket.addEventListener('message', function(e) {
         var message = JSON.parse(e.data);
-        if (message.method === 'bound') {
-          accept();
+        if (message.event === 'bound') {
+          if (message.id !== reqId) {
+            debug("Got requestId: %s Expected: %s", message.id, reqId);
+            return reject("Wrong response id");
+          }
+          return accept("Successful binding");
         }
-        if (message.method === 'error') {
+        if (message.event === 'error') {
           debug("Got error: %j", message);
-          reject();
+          return reject("Got an error back");
         }
       });
     });
     var queueEvents = new taskcluster.QueueEvents();
+    debug("Sending requestId: %s", reqId);
     return ready.then(function() {
       socket.send(JSON.stringify({
         method:   'bind',
-        binding:  queueEvents.taskPending({
-          taskId: slugid.v4()
-        })
+        options:  queueEvents.taskPending({
+                    taskId: slugid.v4()
+                  }),
+        id:       reqId
       }));
       return bound;
     });
@@ -95,10 +103,10 @@ suite('event', function() {
     var gotMessage = new Promise(function(accept, reject) {
       socket.addEventListener('message', function(e) {
         var message = JSON.parse(e.data);
-        if (message.method === 'message') {
-          accept(message.message);
+        if (message.event === 'message') {
+          accept(message.payload);
         }
-        if (message.method === 'error') {
+        if (message.event === 'error') {
           debug("Got error: %j", message);
           reject();
         }
@@ -108,9 +116,10 @@ suite('event', function() {
     return ready.then(function() {
       socket.send(JSON.stringify({
         method:   'bind',
-        binding:  queueEvents.taskDefined({
-          taskId:     taskId
-        })
+        options:   queueEvents.taskDefined({
+                     taskId:     taskId
+                   }),
+        id:       slugid.v4()
       }));
     }).then(function() {
       var queue = new taskcluster.Queue({
@@ -122,11 +131,6 @@ suite('event', function() {
         provisionerId:    "dummy-test-provisioner",
         workerType:       "dummy-test-worker-type",
         schedulerId:      "dummy-test-scheduler",
-        taskGroupId:      taskId,
-        scopes:           [],
-        routes:           [],
-        retries:          3,
-        priority:         5,
         created:          (new Date()).toJSON(),
         deadline:         deadline.toJSON(),
         payload:          {},

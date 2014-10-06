@@ -1,7 +1,8 @@
 module.exports = {
   // Event specific configuration
   events: {
-
+    // Name of component in statistics
+    statsComponent:                 'events'
   },
 
   // Server configuration
@@ -26,5 +27,18 @@ module.exports = {
   amqp: {
     // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
     url:                            undefined
-  }
+  },
+
+  // InfluxDB configuration
+  influx: {
+    // Usually provided as environment variables, must be on the form:
+    // https://<user>:<pwd>@<host>:<port>/db/<database>
+    connectionString:               undefined,
+
+    // Maximum delay before submitting pending points
+    maxDelay:                       5 * 60,
+
+    // Maximum pending points in memory
+    maxPendingPoints:               250
+  },
 };

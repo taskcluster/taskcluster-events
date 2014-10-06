@@ -16,7 +16,7 @@
     "lodash":                           "2.4.1",
     "debug":                            "2.0.0",
     "taskcluster-client":               "0.15.8",
-    "taskcluster-base":                 "0.5.5",
+    "taskcluster-base":                 "0.5.6",
     "promise":                          "6.0.0",
     "sockjs":                           "0.3.9",
     "url-join":                         "0.0.1",

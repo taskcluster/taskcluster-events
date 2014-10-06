@@ -1,20 +1,10 @@
 module.exports = {
-  events: {
-
-  },
-
   server: {
-    publicUrl:                      'https://events.taskcluster.net',
-
+    publicUrl:                      'http://localhost',
     port:                           60002,
-
     env:                            'development',
-
     forceSSL:                       false,
-
     trustProxy:                     false,
-
-    cookieSecret:                   'Warn, if no secret is used on production'
   },
 
   amqp: {

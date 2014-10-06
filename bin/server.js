@@ -18,29 +18,41 @@ var launch = function(profile) {
     filename:     'taskcluster-events'
   });
 
-  // Load things that we need to load before starting
-  return Promise.all([
-  ]).then(function() {
-    // Create app
-    var app = base.app({
-      port:           Number(process.env.PORT || cfg.get('server:port')),
-      env:            cfg.get('server:env'),
-      forceSSL:       cfg.get('server:forceSSL'),
-      trustProxy:     cfg.get('server:trustProxy')
+  // Create InfluxDB connection for submitting statistics
+  var influx = new base.stats.Influx({
+    connectionString:   cfg.get('influx:connectionString'),
+    maxDelay:           cfg.get('influx:maxDelay'),
+    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
+  });
+
+  // Start monitoring the process
+  base.stats.startProcessUsageReporting({
+    drain:      influx,
+    component:  cfg.get('events:statsComponent'),
+    process:    'server'
+  });
+
+  // Create app
+  var app = base.app({
+    port:           Number(process.env.PORT || cfg.get('server:port')),
+    env:            cfg.get('server:env'),
+    forceSSL:       cfg.get('server:forceSSL'),
+    trustProxy:     cfg.get('server:trustProxy')
+  });
+
+  // Serve static content from assets/
+  app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
+
+  // Create server
+  return app.createServer().then(function(server) {
+    // Attach socket.io server
+    socket.create(server, {
+      connectionString:   cfg.get('amqp:url'),
+      publicUrl:          cfg.get('server:publicUrl'),
+      component:          cfg.get('events:statsComponent'),
+      drain:              influx
     });
-
-    // Serve static content from assets/
-    app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
-
-    // Create server
-    return app.createServer().then(function(server) {
-      // Attach socket.io server
-      socket.create(server, {
-        connectionString:   cfg.get('amqp:url'),
-        publicUrl:          cfg.get('server:publicUrl')
-      });
-      return server;
-    })
+    return server;
   });
 };
 
