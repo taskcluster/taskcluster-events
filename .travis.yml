@@ -13,5 +13,5 @@ deploy:
   on:
     repo: taskcluster/taskcluster-events
 before_install:
-- openssl aes-256-cbc -K $encrypted_da51d083b616_key -iv $encrypted_da51d083b616_iv
-  -in task-graph-scheduler.conf.json.enc -out task-graph-scheduler.conf.json -d
+- openssl aes-256-cbc -K $encrypted_fe3b06c071a6_key -iv $encrypted_fe3b06c071a6_iv
+  -in taskcluster-events.conf.json.enc -out taskcluster-events.conf.json -d
