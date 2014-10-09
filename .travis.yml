@@ -7,6 +7,7 @@ node_js:
 script: npm test
 deploy:
   provider: heroku
+  strategy: git
   api_key:
     secure: CcESSZZF+qsck+AH5GWZnSBIJu+xIn2u43ykfiVkyAFQmAhEUib04JFuN8XJ0CWLCoAQSZoq+Gf5yxUwxqwTscg6sT+OOBEagVbD7r7TXbjXDKSigCo4vZBI+wrMh2Av8GQAeuV1VsvHPTnXH0FLqm+iIPsE2kLJpUnFYM5KSe8=
   app: taskcluster-events
