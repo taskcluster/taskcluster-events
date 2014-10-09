@@ -15,15 +15,15 @@
   "dependencies": {
     "lodash":                           "2.4.1",
     "debug":                            "2.0.0",
-    "taskcluster-client":               "0.15.8",
-    "taskcluster-base":                 "0.5.6",
+    "taskcluster-client":               "0.17.0",
+    "taskcluster-base":                 "0.6.0",
     "promise":                          "6.0.0",
     "sockjs":                           "0.3.9",
     "url-join":                         "0.0.1",
-    "express":                          "4.9.5"
+    "express":                          "4.9.6"
   },
   "devDependencies": {
-    "slugid":                           "1.0.2",
+    "slugid":                           "1.0.3",
     "sockjs-client-node":               "0.1.1",
     "mocha":                            "1.21.4"
   },

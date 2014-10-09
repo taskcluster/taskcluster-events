@@ -39,7 +39,7 @@ exports.create = function(httpServer, options) {
   var schedulerEvents = new taskcluster.SchedulerEvents();
 
   // Create new AMQP connection for all the listeners to share
-  var connection = new taskcluster.Connection({
+  var connection = new taskcluster.AMQPConnection({
     connectionString:     options.connectionString
   });
 
@@ -79,7 +79,7 @@ var Proxy = function(socket, connection, reporter, component) {
   this.socket.on('error', this.onError.bind(this));
 
   // Create listener
-  this.listener = new taskcluster.Listener({
+  this.listener = new taskcluster.AMQPListener({
     prefetch:           10,
     maxLength:          50,
     connection:         connection
