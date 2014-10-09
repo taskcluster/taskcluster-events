@@ -9,7 +9,7 @@ deploy:
   provider: heroku
   strategy: git
   app: taskcluster-events
-  user:
+  username:
     secure: CiPfQgE2eBkNjYOiK/frZTm50HRD3Zh7VAvjMF+pwiKpuTLfHATLT/yxyS9Jq1+jtD/sdxvN5kv99+oHCSlgfyljRESq3BWbPoVBlWPKecfXlXMgKw6KimQ60VjpxyhbYDXKKu/aEpfnGCMzNyGpyiYmFQEybwDmG10f3ipNoRg=
   password:
     secure: fdMWxe3OVfgLzZ33km0dEKRxO5hykhgJW7/aDHy46JmyBL2gPTjzs6RKfq7WG8XUK941n0NxREvbE4tiIXWdBIitTs5AHqmxwhEqmed6dw9fM//xL4XRQeGfOthg7ClDkAMW1N1C2XW9wWgAbM/1j7ZjRmEfi8+8YcYtXXDcfqQ=
