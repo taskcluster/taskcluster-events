@@ -14,7 +14,8 @@ var launch = function(profile) {
     profile:      require('../config/' + profile),
     envs:         [
       'influx_connectionString',
-      'amqp_url'
+      'pulse_username',
+      'pulse_password'
     ],
     filename:     'taskcluster-events'
   });
@@ -48,7 +49,7 @@ var launch = function(profile) {
   return app.createServer().then(function(server) {
     // Attach socket.io server
     socket.create(server, {
-      connectionString:   cfg.get('amqp:url'),
+      credentials:        cfg.get('pulse'),
       publicUrl:          cfg.get('server:publicUrl'),
       component:          cfg.get('events:statsComponent'),
       drain:              influx

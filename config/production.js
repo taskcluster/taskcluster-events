@@ -6,7 +6,9 @@ module.exports = {
     forceSSL:                       true,
     trustProxy:                     true,
   },
-  amqp: {
-    url:                            undefined
-  }
+  pulse: {
+    username:                       'taskcluster-events',
+    // Provided by environment variable
+    password:                       undefined
+  },
 };

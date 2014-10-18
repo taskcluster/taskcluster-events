@@ -15,13 +15,15 @@ suite('event', function() {
     envs:         [
       'taskcluster_credentials_clientId',     // Only for testing
       'taskcluster_credentials_accessToken',  // Only for testing
-      'amqp_url'
+      'pulse_username',
+      'pulse_password'
     ],
     filename:     'taskcluster-events'
   });
 
   // Check that we have credentials to run these test
-  if (!cfg.get('amqp:url') || !cfg.get('taskcluster:credentials:accessToken')) {
+  if (!cfg.get('pulse:password') ||
+      !cfg.get('taskcluster:credentials:accessToken')) {
     console.log("Skipping event_test.js due to missing configuration");
     return;
   }

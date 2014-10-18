@@ -23,10 +23,10 @@ module.exports = {
     trustProxy:                     false,
   },
 
-  // AMQP configuration
-  amqp: {
-    // URL for AMQP setup formatted as amqp://user:password@host:port/vhost
-    url:                            undefined
+  // Pulse credentials
+  pulse: {
+    username:                       undefined,
+    password:                       undefined
   },
 
   // InfluxDB configuration

@@ -5,9 +5,5 @@ module.exports = {
     env:                            'development',
     forceSSL:                       false,
     trustProxy:                     false,
-  },
-
-  amqp: {
-    url:                            'amqp://guest:guest@localhost:5672'
   }
 };

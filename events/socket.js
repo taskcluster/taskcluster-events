@@ -21,11 +21,13 @@ var WebSocketListeners = new base.stats.Series({
 /** Create SockJS handler on httpServer */
 exports.create = function(httpServer, options) {
   // Validate options
-  assert(httpServer,                "httpServer is required");
-  assert(options,                   "options are required");
-  assert(options.connectionString,  "connectionString is required");
-  assert(options.publicUrl,         "publicUrl is required");
-  assert(options.component,         "component name is required");
+  assert(httpServer,                    "httpServer is required");
+  assert(options,                       "options are required");
+  assert(options.credentials,           "credentials is required");
+  assert(options.credentials.username,  "credentials.username is required");
+  assert(options.credentials.password,  "credentials.password is required");
+  assert(options.publicUrl,             "publicUrl is required");
+  assert(options.component,             "component name is required");
   // Provide default options
   options = _.defaults({}, options, {
     drain:      new base.stats.NullDrain()
@@ -38,10 +40,8 @@ exports.create = function(httpServer, options) {
   var queueEvents = new taskcluster.QueueEvents();
   var schedulerEvents = new taskcluster.SchedulerEvents();
 
-  // Create new AMQP connection for all the listeners to share
-  var connection = new taskcluster.AMQPConnection({
-    connectionString:     options.connectionString
-  });
+  // Create new Pulse connection for all the listeners to share
+  var connection = new taskcluster.PulseConnection(options.credentials);
 
   // Create sockjs server
   var server = sockjs.createServer();
@@ -79,7 +79,7 @@ var Proxy = function(socket, connection, reporter, component) {
   this.socket.on('error', this.onError.bind(this));
 
   // Create listener
-  this.listener = new taskcluster.AMQPListener({
+  this.listener = new taskcluster.PulseListener({
     prefetch:           10,
     maxLength:          50,
     connection:         connection
