@@ -85,6 +85,21 @@ var Proxy = function(socket, connection, reporter, component) {
     connection:         connection
   });
 
+  // Cache errors
+  this.listener.on('error', function(err) {
+    // Report an error from the listener
+    this.reportError("PulseListener Error: " + err.toString(), {
+      info:       "Error from PulseListener: " + err.toString(),
+      reconnect:  false
+    });
+
+    // Make sure the socket is killed
+    this.socket.end();
+
+    // And close the listener too
+    this.listener.close();
+  }.bind(this));
+
   // Send messages to the client
   this.listener.on('message', this.onMessage.bind(this));
 

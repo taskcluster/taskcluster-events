@@ -55,6 +55,9 @@ suite('event', function() {
     return new Promise(function(accept) {
       socket.onclose = accept;
       socket.close();
+      if (socket.readyState === 3) {
+        accept();
+      }
     }).then(function() {
       return server.terminate();
     });
@@ -98,8 +101,88 @@ suite('event', function() {
     });
   });
 
+  test('bind (illegal exchange)', function() {
+    var reqId = slugid.v4();
+    var bound = new Promise(function(accept, reject) {
+      socket.addEventListener('message', function(e) {
+        var message = JSON.parse(e.data);
+        if (message.event === 'bound' && message.id !== reqId) {
+          return reject("Successful binding");
+        }
+        if (message.event === 'error') {
+          debug("Got expected error: %j", message);
+          return accept("Got an error back");
+        }
+      });
+    });
+    debug("Sending requestId: %s", reqId);
+    return ready.then(function() {
+      socket.send(JSON.stringify({
+        method:   'bind',
+        options:  {exchange: "illegal-exchange", routingKeyPattern: "#"},
+        id:       reqId
+      }));
+      return bound;
+    }).then(function() {
+      // Create a new socket to ensure that server survived
+      var newSocket = new SockJS('http://localhost:60002/v1/listen');
+      return new Promise(function(accept) {
+        newSocket.addEventListener('open', function() {
+          debug('open');
+          newSocket.addEventListener('message', function(e) {
+            debug("got message from socket2: %s", e.data);
+            var message = JSON.parse(e.data);
+            if (JSON.parse(e.data).event === 'ready') {
+              accept();
+            }
+          });
+        });
+      }).then(function() {
+        // Check that we can bind with newSocket
+        var reqId = slugid.v4();
+        var bound = new Promise(function(accept, reject) {
+          newSocket.addEventListener('message', function(e) {
+            var message = JSON.parse(e.data);
+            if (message.event === 'bound') {
+              if (message.id !== reqId) {
+                debug("Got requestId: %s Expected: %s", message.id, reqId);
+                return reject("Wrong response id");
+              }
+              return accept("Successful binding");
+            }
+            if (message.event === 'error') {
+              debug("Got error: %j", message);
+              return reject("Got an error back");
+            }
+          });
+        });
+        var queueEvents = new taskcluster.QueueEvents();
+        debug("Sending requestId: %s", reqId);
+        return ready.then(function() {
+          newSocket.send(JSON.stringify({
+            method:   'bind',
+            options:  queueEvents.taskPending({
+                        taskId: slugid.v4()
+                      }),
+            id:       reqId
+          }));
+          return bound;
+        });
+      }).then(function() {
+        // Close new socket
+        return new Promise(function(accept) {
+          newSocket.onclose = accept;
+          newSocket.close();
+          if (newSocket.readyState === 3) {
+            accept();
+          }
+        });
+      });
+    });
+  });
 
-  test('bind', function() {
+
+  test('receive message', function() {
     this.timeout(10000);
     var taskId = slugid.v4();
     var gotMessage = new Promise(function(accept, reject) {
