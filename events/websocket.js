@@ -321,7 +321,13 @@ Proxy.prototype.bind = function(id, options) {
   });
 };
 
-/** Respond to a ping frame */
+/**
+ * Respond to a ping frame
+ *
+ * WebSocket clients may ping the server at anytime, to check if the connection
+ * is still alive. We must respond with the same data we got, so that they
+ * WebSocket client knows the socket is still alive.
+ */
 Proxy.prototype.onPing = function(data, flags) {
   try {
     this.socket.pong(data, flags, true);
@@ -333,18 +339,38 @@ Proxy.prototype.onPing = function(data, flags) {
   }
 };
 
-/** Send a ping to check if the connection is alive */
+/**
+ * Send a ping to check if the connection is alive
+ *
+ * This method is called in iterations across all sockets. The purposes is the
+ * validate that the socket is still alive. If the client disappears we will
+ * not discover this until we send data to the client and the client fails to
+ * respond. Hence, to ensure that we clean-up the connection if the client
+ * doesn't gracefully close the TCP connection we must send pings at an
+ * interval.
+ *
+ * Fur the purposes of this simple algorithm we just send a ping at each
+ * iteration and count the number of iterations where we haven't seen any data
+ * from the client. Any message or pong will reset the count of
+ * inactiveIterations.
+ *
+ * When we have more than MAX_INACTIVE_ITERATIONS number of inactive iterations
+ * we determine that the TCP connection is dead and clean-up all resources.
+ * If we didn't do this PulseListeners and TCP connections would leak,
+ * especially if no messages arrives over pulse as nothing would get sent to
+ * validate the TCP connection.
+ */
 Proxy.prototype.keepAlive = function() {
   // If we have reached the maximum number of inactive iteration close
   // everything and clean-up
-  if (this.inactiveIterations <= MAX_INACTIVE_ITERATIONS * - 1) {
+  if (this.inactiveIterations <= MAX_INACTIVE_ITERATIONS) {
     this.sendError("Closing due to missing pongs", {
-      missingPongs:  this.inactiveIterations * - 1
+      missingPongs:  this.inactiveIterations
     });
     return this.close();
   }
   // Increment number of inactive iterations
-  this.inactiveIterations = -1;
+  this.inactiveIterations += 1;
   try {
     this.socket.ping(slugid.v4());
   }
@@ -354,7 +380,10 @@ Proxy.prototype.keepAlive = function() {
   }
 };
 
-/** Handle pongs, so that keepAlive won't close() in next iteration */
+/**
+ * Handle pongs by reseting the inactiveIterations counter, so that keepAlive
+ * won't close() in next iteration.
+ */
 Proxy.prototype.onPong = function(data, flags) {
   this.inactiveIterations = 0;
 };
