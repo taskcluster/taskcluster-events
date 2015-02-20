@@ -20,11 +20,12 @@
     "promise":                          "6.0.1",
     "sockjs":                           "0.3.9",
     "url-join":                         "0.0.1",
-    "express":                          "4.9.8"
+    "express":                          "4.9.8",
+    "ws":                               "^0.7.1"
   },
   "devDependencies": {
     "slugid":                           "1.0.3",
-    "sockjs-client-node":               "0.1.1",
+    "sockjs-client-node":               "0.2.1",
     "mocha":                            "1.21.5"
   },
   "engines": {

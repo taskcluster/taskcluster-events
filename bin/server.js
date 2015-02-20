@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-var base    = require('taskcluster-base');
-var path    = require('path');
-var debug   = require('debug')('events:bin:server');
-var Promise = require('promise');
-var socket  = require('../events/socket');
-var express = require('express');
+var base      = require('taskcluster-base');
+var path      = require('path');
+var debug     = require('debug')('events:bin:server');
+var Promise   = require('promise');
+var socket    = require('../events/socket');
+var websocket = require('../events/websocket');
+var express   = require('express');
+var stats     = require('../events/stats');
 
 /** Launch server */
 var launch = function(profile) {
@@ -34,6 +36,9 @@ var launch = function(profile) {
     process:    'server'
   });
 
+  // Create statistics reporter
+  var reporter = stats.WebSocketListeners.reporter(influx);
+
   // Create app
   var app = base.app({
     port:           Number(process.env.PORT || cfg.get('server:port')),
@@ -47,12 +52,20 @@ var launch = function(profile) {
 
   // Create server
   return app.createServer().then(function(server) {
-    // Attach socket.io server
+    // Attach sockjs server
     socket.create(server, {
       credentials:        cfg.get('pulse'),
       publicUrl:          cfg.get('server:publicUrl'),
       component:          cfg.get('events:statsComponent'),
-      drain:              influx
+      reporter:           reporter
+    });
+
+    // Attach websocket server
+    websocket.create(server, {
+      credentials:        cfg.get('pulse'),
+      publicUrl:          cfg.get('server:publicUrl'),
+      component:          cfg.get('events:statsComponent'),
+      reporter:           reporter
     });
     return server;
   });
