@@ -7,17 +7,6 @@ var assert      = require('assert');
 var base        = require('taskcluster-base');
 var slugid      = require('slugid');
 
-/** Report statistics about web-socket connections */
-var WebSocketListeners = new base.stats.Series({
-  name:             'WebSocketListeners',
-  columns: {
-    component:      base.stats.types.String,
-    duration:       base.stats.types.Number,
-    messages:       base.stats.types.Number,
-    bindings:       base.stats.types.Number
-  }
-});
-
 /** Create SockJS handler on httpServer */
 exports.create = function(httpServer, options) {
   // Validate options
@@ -28,17 +17,7 @@ exports.create = function(httpServer, options) {
   assert(options.credentials.password,  "credentials.password is required");
   assert(options.publicUrl,             "publicUrl is required");
   assert(options.component,             "component name is required");
-  // Provide default options
-  options = _.defaults({}, options, {
-    drain:      new base.stats.NullDrain()
-  });
-
-  // Create statistics reporter
-  var reporter = WebSocketListeners.reporter(options.drain);
-
-  // taskcluster events
-  var queueEvents = new taskcluster.QueueEvents();
-  var schedulerEvents = new taskcluster.SchedulerEvents();
+  assert(options.reporter,              "reporter for stats expected");
 
   // Create new Pulse connection for all the listeners to share
   var connection = new taskcluster.PulseConnection(options.credentials);
@@ -48,7 +27,12 @@ exports.create = function(httpServer, options) {
 
   // Listen for connections
   server.on('connection', function(socket) {
-    socket.proxy = new Proxy(socket, connection, reporter, options.component);
+    socket.proxy = new Proxy(
+      socket,
+      connection,
+      options.reporter,
+      options.component
+    );
   });
 
   // Install handler on http server

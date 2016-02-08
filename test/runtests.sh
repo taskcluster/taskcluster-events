@@ -3,5 +3,6 @@
 
 
 mocha                               \
-  test/event_test.js                \
+  test/sockjs_test.js               \
+  test/websocket_test.js            \
   ;
