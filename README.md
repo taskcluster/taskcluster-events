@@ -1,5 +1,7 @@
 TaskCluster AMQP Event Proxy
 ============================
+<img src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-events.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-events)
 
 This allows browser client to bind to AMQP exchanges listed in
 `taskcluster-client` and listen for events over a SockJS backed websocket.
