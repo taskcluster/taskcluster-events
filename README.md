@@ -46,3 +46,7 @@ listener.close();
 </script>
 ```
 
+Deployment
+----------
+ 1. Supply config as environment variables (see `server.js`).
+ 2. Use `tools.taskcluster.net/pulse-inspector` to verify that it works
