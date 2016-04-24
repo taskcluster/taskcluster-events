@@ -17,11 +17,5 @@ test: # profile 'test'
   hostname:           http://localhost
   port:               12345
   forceSSL:           false
-  pulse:
-    username:         pulse_username
-    password:         pulse_password
-  taskcluster:
-    credentials:
-      accessToken:    taskcluster_credenetials_accessToken
-      clientId:       taskcluster_credenetials_clientId
+# Add pulse and tc credentials here 
 # Add more profiles here

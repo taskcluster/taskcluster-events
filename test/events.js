@@ -21,6 +21,10 @@ module.exports = suite('events',() => {
     env:      process.env
   });
 
+  if(!cfg.pulse.username && !cfg.taskcluster.credentials.accessToken){
+    debug('skipping tests due to missing configuration');
+  }
+
   before(()=>{
     launch('test').then(serv => {
       server = serv;
