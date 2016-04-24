@@ -2,6 +2,6 @@
 # USAGE: Run this file using `npm test` (must run from repository root)
 
 
-DEBUG=test:events mocha                               \
+DEBUG=test:events,events:socket mocha                               \
   test/events.js                \
   ;

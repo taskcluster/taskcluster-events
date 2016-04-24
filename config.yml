@@ -12,10 +12,24 @@ defaults:
 production: # profile 'production'
   hostname:           !env HOSTNAME
   port:               !env:number PORT
-
+  pulse:
+    username:         !env PULSE_USERNAME
+    password:         !env PULSE_PASSWORD
+  taskcluster:
+    credentials:
+      accessToken:    !env TASKCLUSTER_CREDENTIALS_ACCESSTOKEN
+      clientId:       !env TASKCLUSTER_CREDENTIALS_CLIENTID
+  influx:
+    connectionString: !env:string INFLUX_DB_CONNECTION_STRING
 test: # profile 'test'
   hostname:           http://localhost
   port:               12345
   forceSSL:           false
-# Add pulse and tc credentials here 
+  pulse:
+    username:         ckousik
+    password:         '*3!!ip5is*'
+  taskcluster:
+    credentials:
+      accessToken:    zhty7z9gQKOJMar09XMZlgUUPQS_PtRsSQ7_k-h5EDlg
+      clientId:       persona/chinmaykousik1@gmail.com/events
 # Add more profiles here

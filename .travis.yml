@@ -3,11 +3,10 @@ env:
   - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
 language: node_js
 node_js:
-- '4'
+- '4.4.3'
 script: npm test
-#before_install:
-#- openssl aes-256-cbc -K $encrypted_fe3b06c071a6_key -iv $encrypted_fe3b06c071a6_iv
-#  -in taskcluster-events.conf.json.enc -out taskcluster-events.conf.json -d
+before_install:
+- openssl aes-256-cbc -K $encrypted_fe3b06c071a6_key -iv $encrypted_fe3b06c071a6_iv -in taskcluster-events.conf.json.enc -out taskcluster-events.conf.json -d
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094

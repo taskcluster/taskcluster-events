@@ -1,3 +1,4 @@
+'use strict'
 var SockJS        = require('sockjs-client');
 var launch        = require('../bin/server');
 var assert        = require('assert');
@@ -21,7 +22,7 @@ module.exports = suite('events',() => {
     env:      process.env
   });
 
-  if(!cfg.pulse.username && !cfg.taskcluster.credentials.accessToken){
+  if(!cfg.pulse.username || !cfg.taskcluster.credentials.accessToken){
     debug('skipping tests due to missing configuration');
   }
 
@@ -33,7 +34,8 @@ module.exports = suite('events',() => {
       socket.onopen = () => { debug('socket open');}
       ready = new Promise(function(resolve, reject) {
         socket.onmessage = (e)=> {
-          var message = JSON.parse(e.data);
+          let message = JSON.parse(e.data);
+          debug('message: %s',JSON.stringify(message));
           message.event === 'ready'? resolve():reject();
         }
       });
