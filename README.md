@@ -45,6 +45,12 @@ listener.on('close', function() {
 listener.close();
 </script>
 ```
+Testing
+-------
+1. Add pulse credentials to test profile in user-config.yml (Check user-config-example.yml)
+2. Add taskcluster credentials to test profile in config.yml. Ensure you have the necessary scopes.
+3. If required add influxDb connection string to default in config.yml
+4. Run `npm test`
 
 Deployment
 ----------

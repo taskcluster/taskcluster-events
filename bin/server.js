@@ -1,62 +1,35 @@
-#!/usr/bin/env node
+#!usr/bin/env node
+'use strict'
 var base    = require('taskcluster-base');
 var path    = require('path');
 var debug   = require('debug')('events:bin:server');
-var Promise = require('promise');
 var socket  = require('../events/socket');
 var express = require('express');
+var path    = require('path');
+var assert  = require('assert');
 
-/** Launch server */
-var launch = function(profile) {
-  // Load configuration
-  var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/' + profile),
-    envs:         [
-      'influx_connectionString',
-      'pulse_username',
-      'pulse_password'
-    ],
-    filename:     'taskcluster-events'
-  });
-
-  // Create InfluxDB connection for submitting statistics
-  var influx = new base.stats.Influx({
-    connectionString:   cfg.get('influx:connectionString'),
-    maxDelay:           cfg.get('influx:maxDelay'),
-    maxPendingPoints:   cfg.get('influx:maxPendingPoints')
-  });
-
-  // Start monitoring the process
-  base.stats.startProcessUsageReporting({
-    drain:      influx,
-    component:  cfg.get('events:statsComponent'),
-    process:    'server'
-  });
-
+var launch = (profile) => {
+  var cfg = base.config({profile:  profile});
   // Create app
-  var app = base.app({
-    port:           Number(process.env.PORT || cfg.get('server:port')),
-    env:            cfg.get('server:env'),
-    forceSSL:       cfg.get('server:forceSSL'),
-    trustProxy:     cfg.get('server:trustProxy')
+  var app = new base.app({
+    port:               Number(process.env.PORT || cfg.port),
+    forceSSL:           cfg.forceSSL,
+    trustProxy:         cfg.trustProxy,
+    env:                cfg.env || 'development'
   });
 
   // Serve static content from assets/
   app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
-  // Create server
-  return app.createServer().then(function(server) {
-    // Attach socket.io server
-    socket.create(server, {
-      credentials:        cfg.get('pulse'),
-      publicUrl:          cfg.get('server:publicUrl'),
-      component:          cfg.get('events:statsComponent'),
-      drain:              influx
+  return app.createServer().then(server=>{
+    socket.create(server,{
+      credentials:      cfg.pulse,
+      publicUrl:        cfg.hostname,
+      component:        cfg.events.statsComponent
     });
     return server;
   });
-};
+}
 
 // If server.js is executed start the server
 if (!module.parent) {
@@ -76,5 +49,4 @@ if (!module.parent) {
   });
 }
 
-// Export launch in-case anybody cares
 module.exports = launch;
