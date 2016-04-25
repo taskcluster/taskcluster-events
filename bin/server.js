@@ -9,13 +9,7 @@ var path    = require('path');
 var assert  = require('assert');
 
 var launch = (profile) => {
-  var cfg = base.config({
-    files: [
-      'config.yml',
-      'user-config.yml'
-    ],
-    profile:  profile
-  });
+  var cfg = base.config({profile:  profile});
   // Create app
   var app = new base.app({
     port:               Number(process.env.PORT || cfg.port),

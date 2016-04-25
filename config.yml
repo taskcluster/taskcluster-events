@@ -30,6 +30,6 @@ test: # profile 'test'
     password:         !env PULSE_PASSWORD
   taskcluster:
     credentials:
-      accessToken:    !env TASKCLUSTER_CREDENTIALS_ACCESSTOKEN
-      clientId:       !env TASKCLUSTER_CREDENTIALS_CLIENTID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+      clientId:       !env TASKCLUSTER_CLIENT_ID
 # Add more profiles here

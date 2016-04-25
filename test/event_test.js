@@ -14,17 +14,14 @@ const URL = 'http://localhost:12345/v1/listen';
 module.exports = suite('events',() => {
   var ready, socket, server;
 
-  var cfg = base.config({
-    files: [
-      'config.yml',
-      'user-config.yml'
-    ],
-    profile:  'test',
-    env:      process.env
-  });
+  var cfg = base.config({profile:  'test'});
 
   if(!cfg.pulse.username || !cfg.taskcluster.credentials.accessToken){
     debug('skipping tests due to missing configuration');
+    if(!cfg.pulse.username)
+      debug('pulse username not found');
+    if(!cfg.taskcluster.credentials.accessToken)
+      debug('taskcluster accessToken not found');
     return;
   }
 
