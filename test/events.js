@@ -36,7 +36,9 @@ module.exports = suite('events',() => {
         socket.onmessage = (e)=> {
           let message = JSON.parse(e.data);
           debug('message: %s',JSON.stringify(message));
-          message.event === 'ready'? resolve():reject();
+          if(message.event === 'ready'){
+            resolve();
+          }
         }
       });
     });
@@ -65,28 +67,66 @@ module.exports = suite('events',() => {
   });
 
   /* Test queue */
-
-  it('should bind',() => {
-    var reqId = slugid.v4();
-    // send message
+  /*
+    Checks if we can bind to an exchange and receive a message
+  */
+  it('should bind and receive message', function () {
+    this.timeout(20000);
+    var taskId = slugid.v4();
     var queueEvents = new taskcluster.QueueEvents();
+
+    let gotMessage = new Promise((resolve, reject)=> {
+      socket.onmessage = (e) => {
+        var message = JSON.parse(e.data);
+        assert(message.event !== 'error', "Error occured while receiving message");
+        if(message.event === 'message'){
+          debug('payload: %s',JSON.stringify(message.payload));
+          resolve(message.payload);
+        }
+      }
+    });
     return ready.then(() => {
-      socket.send(JSON.stringify ({
-        method :  'bind',
-        options :  queueEvents.taskPending({
-                    taskId : slugid.v4()
-                  }),
-        id      :  reqId
+      socket.send(JSON.stringify({
+        method  : 'bind',
+        options : queueEvents.taskDefined({ taskId  : taskId }),
+        id      : slugid.v4()
       }));
-      //check response
-      return new Promise((resolve,reject) => {
-        socket.onmessage = (e) =>{
-          var message = JSON.parse(e.data);
-          assert(message.event === 'bound', "Unsucessful binding");
-          assert(message.id === reqId, "Got wrong request id");
-          resolve();
+    })
+    //Set up queue
+    .then(() => {
+      var queue = new taskcluster.Queue({
+        credentials : cfg.taskcluster.credentials
+      });
+      var deadline = new Date();
+      deadline.setHours(deadline.getHours() + 2);
+      return queue.defineTask(taskId, {
+      	"provisionerId": "aws-provisioner-v1",
+      	"workerType": "tutorial",
+      	"created": (new Date()).toJSON(),
+      	"deadline": deadline.toJSON(),
+      	"payload": {
+      		"image": "ubuntu:13.10",
+      		"command": [
+      			"/bin/bash",
+      			"-c",
+      			"echo \"hello World\""
+      		],
+      		"maxRunTime": 600
+      	},
+      	"metadata": {
+      		"name": "Example Task",
+      		"description": "Markdown description of **what** this task does",
+      		"owner": "name@example.com",
+      		"source": "https://tools.taskcluster.net/task-creator/"
+      	},
+        tags: {
+          objective:      "Test taskcluster-event"
         }
       });
+    }).then(() => {
+      return gotMessage;
+    }).then((result) => {
+      assert(result.payload.status.taskId === taskId, "Got wrong task id");
     });
   });
 
@@ -113,55 +153,5 @@ module.exports = suite('events',() => {
     })
   });
 
-  it('should receive message', function () {
-    this.timeout(10000);
-    var taskId = slugid.v4();
-    var gotMessage = new Promise(function(resolve, reject) {
-      socket.onmessage = (e) => {
-        var message = JSON.parse(e.data);
-        assert(message.event === 'message', "Message event expected");
-        debug('payload: %s',message.payload);
-        resolve();
-      }
-    });
-
-    var queueEvents = new taskcluster.QueueEvents();
-    return ready.then(() => {
-      socket.send(JSON.stringify({
-        method  : 'bind',
-        options : queueEvents.taskDefined({ taskId  : taskId }),
-        id      : slugid.v4()
-      }));
-    })
-    //Set up queue
-    .then(() => {
-      var queue = new taskcluster.Queue({
-        credentials : cfg.taskcluster.credentials
-      });
-      var deadline = new Date();
-      deadline.setHours(deadline.getHours() + 2);
-      return queue.defineTask(taskId, {
-        provisionerId:    "dummy-test-provisioner",
-        workerType:       "dummy-test-worker-type",
-        schedulerId:      "dummy-test-scheduler",
-        created:          (new Date()).toJSON(),
-        deadline:         deadline.toJSON(),
-        payload:          {},
-        metadata: {
-          name:           "Print `'Hello World'` Once",
-          description:    "This task will prìnt `'Hello World'` **once**!",
-          owner:          "jojensen@mozilla.com",
-          source:         "https://github.com/taskcluster/taskcluster-events"
-        },
-        tags: {
-          objective:      "Test taskcluster-event"
-        }
-      });
-    }).then(() => {
-      return gotMessage;
-    }).then((result) => {
-      assert(result.payload.status.taskId === taskId, "Got wrong task id");
-    });
-  });
   /* End of queue tests*/
 });
