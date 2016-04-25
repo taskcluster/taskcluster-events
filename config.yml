@@ -17,8 +17,8 @@ production: # profile 'production'
     password:         !env PULSE_PASSWORD
   taskcluster:
     credentials:
-      accessToken:    !env TASKCLUSTER_CREDENTIALS_ACCESSTOKEN
-      clientId:       !env TASKCLUSTER_CREDENTIALS_CLIENTID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+      clientId:       !env TASKCLUSTER_CLIENT_ID
   influx:
     connectionString: !env:string INFLUX_DB_CONNECTION_STRING
 test: # profile 'test'
