@@ -8,25 +8,14 @@ var express = require('express');
 var path    = require('path');
 var assert  = require('assert');
 
-var launch = (profile,env) => {
+var launch = (profile) => {
   var cfg = base.config({
     files: [
-      path.join(__dirname,'../config.yml')
+      'config.yml',
+      'user-config.yml'
     ],
-    profile:  profile,
-    env:      env || process.env
+    profile:  profile
   });
-
-  // Create InfluxDB connection for submitting statistics
-  var influx = null;
-  if(cfg.influx.connectionString){
-    influx = new base.stats.Influx({
-      connectionString:   cfg.influx.connectionString,
-      maxDelay:           cfg.influx.maxDelay,
-      maxPendingPoints:   cfg.influx.maxPendingPoints
-    });
-  }
-
   // Create app
   var app = new base.app({
     port:               Number(process.env.PORT || cfg.port),

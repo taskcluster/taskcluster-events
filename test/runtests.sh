@@ -3,5 +3,5 @@
 
 
 DEBUG=test:events,events:socket mocha                               \
-  test/events.js                \
+  test/event_test.js                \
   ;

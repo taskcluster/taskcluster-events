@@ -1,221 +1,111 @@
-suite('event', function() {
-  var Promise     = require('promise');
-  var launch      = require('../bin/server');
-  var SockJS      = require('sockjs-client-node');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var taskcluster = require('taskcluster-client');
-  var debug       = require('debug')('test:event');
-  var base        = require('taskcluster-base');
+'use strict'
+var SockJS        = require('sockjs-client');
+var launch        = require('../bin/server');
+var assert        = require('assert');
+var base          = require('taskcluster-base');
+var slugid        = require('slugid');
+var taskcluster   = require('taskcluster-client');
+var debug         = require('debug')('test:events');
+var path          = require('path');
 
-  // Load configuration
+const URL = 'http://localhost:12345/v1/listen';
+
+
+module.exports = suite('events',() => {
+  var ready, socket, server;
+
   var cfg = base.config({
-    defaults:     require('../config/defaults'),
-    profile:      require('../config/localhost'),
-    envs:         [
-      'taskcluster_credentials_clientId',     // Only for testing
-      'taskcluster_credentials_accessToken',  // Only for testing
-      'pulse_username',
-      'pulse_password'
+    files: [
+      'config.yml',
+      'user-config.yml'
     ],
-    filename:     'taskcluster-events'
+    profile:  'test',
+    env:      process.env
   });
 
-  // Check that we have credentials to run these test
-  if (!cfg.get('pulse:password') ||
-      !cfg.get('taskcluster:credentials:accessToken')) {
-    console.log("Skipping event_test.js due to missing configuration");
+  if(!cfg.pulse.username || !cfg.taskcluster.credentials.accessToken){
+    debug('skipping tests due to missing configuration');
     return;
   }
 
-  var socket = null;
-  var server = null;
-  var ready = null;
-  setup(function() {
-    return launch('localhost').then(function(server_) {
-      server = server_;
-    }).then(function() {
-      socket = new SockJS('http://localhost:60002/v1/listen');
-      ready = new Promise(function(accept) {
-        socket.addEventListener('open', function() {
-          debug('open');
-          socket.addEventListener('message', function(e) {
-            debug("got message: %s", e.data);
-            var message = JSON.parse(e.data);
-            if (JSON.parse(e.data).event === 'ready') {
-              accept();
-            }
-          });
-        });
+  before(()=>{
+    launch('test').then(serv => {
+      server = serv;
+    }).then(() => {
+      socket = new SockJS(URL);
+      socket.onopen = () => { debug('socket open');}
+      ready = new Promise((resolve, reject)=> {
+        socket.onmessage = (e)=> {
+          let message = JSON.parse(e.data);
+          debug('message: %s',JSON.stringify(message));
+          if(message.event === 'ready'){
+            resolve();
+          }
+        }
       });
     });
   });
 
-  teardown(function() {
-    return new Promise(function(accept) {
-      socket.onclose = accept;
+  after(() => {
+    return new Promise((resolve) => {
+      socket.onclose = resolve;
       socket.close();
       if (socket.readyState === 3) {
-        accept();
+        resolve();
       }
     }).then(function() {
       return server.terminate();
     });
   });
-
-  test('connect', function() {
-    return ready.then(function() {
-      assert(socket.readyState === 1, "Expect socket to be ready!");
-    });
-  });
-
-  test('bind', function() {
-    var reqId = slugid.v4();
-    var bound = new Promise(function(accept, reject) {
-      socket.addEventListener('message', function(e) {
-        var message = JSON.parse(e.data);
-        if (message.event === 'bound') {
-          if (message.id !== reqId) {
-            debug("Got requestId: %s Expected: %s", message.id, reqId);
-            return reject("Wrong response id");
-          }
-          return accept("Successful binding");
-        }
-        if (message.event === 'error') {
-          debug("Got error: %j", message);
-          return reject("Got an error back");
-        }
-      });
-    });
-    var queueEvents = new taskcluster.QueueEvents();
-    debug("Sending requestId: %s", reqId);
-    return ready.then(function() {
-      socket.send(JSON.stringify({
-        method:   'bind',
-        options:  queueEvents.taskPending({
-                    taskId: slugid.v4()
-                  }),
-        id:       reqId
-      }));
-      return bound;
-    });
-  });
-
-  test('bind (illegal exchange)', function() {
-    var reqId = slugid.v4();
-    var bound = new Promise(function(accept, reject) {
-      socket.addEventListener('message', function(e) {
-        var message = JSON.parse(e.data);
-        if (message.event === 'bound' && message.id !== reqId) {
-          return reject("Successful binding");
-        }
-        if (message.event === 'error') {
-          debug("Got expected error: %j", message);
-          return accept("Got an error back");
-        }
-      });
-    });
-    debug("Sending requestId: %s", reqId);
-    return ready.then(function() {
-      socket.send(JSON.stringify({
-        method:   'bind',
-        options:  {exchange: "illegal-exchange", routingKeyPattern: "#"},
-        id:       reqId
-      }));
-      return bound;
-    }).then(function() {
-      // Create a new socket to ensure that server survived
-      var newSocket = new SockJS('http://localhost:60002/v1/listen');
-      return new Promise(function(accept) {
-        newSocket.addEventListener('open', function() {
-          debug('open');
-          newSocket.addEventListener('message', function(e) {
-            debug("got message from socket2: %s", e.data);
-            var message = JSON.parse(e.data);
-            if (JSON.parse(e.data).event === 'ready') {
-              accept();
-            }
-          });
-        });
-      }).then(function() {
-        // Check that we can bind with newSocket
-        var reqId = slugid.v4();
-        var bound = new Promise(function(accept, reject) {
-          newSocket.addEventListener('message', function(e) {
-            var message = JSON.parse(e.data);
-            if (message.event === 'bound') {
-              if (message.id !== reqId) {
-                debug("Got requestId: %s Expected: %s", message.id, reqId);
-                return reject("Wrong response id");
-              }
-              return accept("Successful binding");
-            }
-            if (message.event === 'error') {
-              debug("Got error: %j", message);
-              return reject("Got an error back");
-            }
-          });
-        });
-        var queueEvents = new taskcluster.QueueEvents();
-        debug("Sending requestId: %s", reqId);
-        return ready.then(function() {
-          newSocket.send(JSON.stringify({
-            method:   'bind',
-            options:  queueEvents.taskPending({
-                        taskId: slugid.v4()
-                      }),
-            id:       reqId
-          }));
-          return bound;
-        });
-      }).then(function() {
-        // Close new socket
-        return new Promise(function(accept) {
-          newSocket.onclose = accept;
-          newSocket.close();
-          if (newSocket.readyState === 3) {
-            accept();
-          }
-        });
-      });
+  /*
+  readyState 0 - connecting , 1 - open, 2 - closing, 3 - closed
+  */
+  it('should connect',() => {
+    return ready.then(()=>{
+      assert(socket.readyState === 1, "Expected socket to be ready");
+    }).catch(()=>{
+      assert(socket.readyState !== 2, "Socket closing");
     });
   });
 
 
-  test('receive message', function() {
-    this.timeout(10000);
+  /*
+    Checks if we can bind to an exchange and receive a message
+  */
+
+  it('should bind and receive message', function () {
+    this.timeout(20000);
     var taskId = slugid.v4();
-    var gotMessage = new Promise(function(accept, reject) {
-      socket.addEventListener('message', function(e) {
-        var message = JSON.parse(e.data);
-        if (message.event === 'message') {
-          accept(message.payload);
-        }
-        if (message.event === 'error') {
-          debug("Got error: %j", message);
-          reject();
-        }
-      });
-    });
     var queueEvents = new taskcluster.QueueEvents();
-    return ready.then(function() {
+
+    let gotMessage = new Promise((resolve, reject)=> {
+      socket.onmessage = (e) => {
+        var message = JSON.parse(e.data);
+        assert(message.event !== 'error', "Error occured while receiving message");
+        if(message.event === 'message'){
+          debug('payload: %s',JSON.stringify(message.payload));
+          resolve(message.payload);
+        }
+      }
+    });
+    return ready.then(() => {
       socket.send(JSON.stringify({
-        method:   'bind',
-        options:   queueEvents.taskDefined({
-                     taskId:     taskId
-                   }),
-        id:       slugid.v4()
+        method  : 'bind',
+        options : queueEvents.taskDefined({ taskId  : taskId }),
+        id      : slugid.v4()
       }));
-    }).then(function() {
+    })
+    //Set up queue
+    .then(() => {
       var queue = new taskcluster.Queue({
-        credentials:  cfg.get('taskcluster:credentials')
+        credentials : cfg.taskcluster.credentials
       });
       var deadline = new Date();
       deadline.setHours(deadline.getHours() + 2);
       return queue.defineTask(taskId, {
-        provisionerId:    "dummy-test-provisioner",
-        workerType:       "dummy-test-worker-type",
-        schedulerId:      "dummy-test-scheduler",
+        provisionerId:    "test-dummy-provisioner",
+        workerType:       "dummy-worker-type",
+        schedulerId:      "test-dummy-scheduler",
         created:          (new Date()).toJSON(),
         deadline:         deadline.toJSON(),
         payload:          {},
@@ -229,10 +119,68 @@ suite('event', function() {
           objective:      "Test taskcluster-event"
         }
       });
-    }).then(function() {
+    }).then(() => {
       return gotMessage;
-    }).then(function(result) {
-      assert(result.payload.status.taskId === taskId, "Got wrong taskId");
+    }).then((result) => {
+      assert(result.payload.status.taskId === taskId, "Got wrong task id");
     });
   });
+  //Send illegal exchange option to server
+  it('bind (illegal exchange)', () => {
+    var reqId = slugid.v4();
+    var newSocket;
+    let readySock = sock => {
+      return new Promise((resolve, reject)=> {
+        sock.onopen = (e)=>{
+          debug('Socket open');
+        }
+        sock.onmessage = (e) => {
+          let message = JSON.parse(e.data);
+          assert(message.event === 'ready');
+          resolve();
+        }
+      });
+    }
+
+    let bound =  new Promise((resolve,reject) => {
+      socket.onmessage = (e) => {
+        var message = JSON.parse(e.data);
+        assert(message.event !== 'bound' || message.id === reqId, "Should not bind");
+        assert(message.event === "error", "Error expected");
+        resolve();
+      }
+    });
+    //send message
+    var queueEvents = new taskcluster.QueueEvents();
+    return ready.then(() => {
+      socket.send(JSON.stringify ({
+        method : 'bind',
+        options : { exchange: 'illegal-exchange', routingKeyPattern: '#'},
+        id      : reqId
+      }));
+      //Check for error
+      return bound;
+    }).then(()=>{
+      newSocket = SockJS(URL);
+      return readySock(newSocket);
+    }).then(()=>{
+      newSocket.send(JSON.stringify({
+        method: 'bind',
+        options:  queueEvents.taskPending({
+                    taskId: slugid.v4()
+                  }),
+        id:       reqId
+      }));
+      return bound;
+    }).then(()=>{
+      return new Promise((resolve,reject)=>{
+        newSocket.close();
+        newSocket.onclose = resolve;
+        if(newSocket.readyState === 3){
+          resolve();
+        }
+      });
+    })
+  });
+
 });

@@ -26,10 +26,10 @@ test: # profile 'test'
   port:               12345
   forceSSL:           false
   pulse:
-    username:         ckousik
-    password:         '*3!!ip5is*'
+    username:         !env PULSE_USERNAME
+    password:         !env PULSE_PASSWORD
   taskcluster:
     credentials:
-      accessToken:    zhty7z9gQKOJMar09XMZlgUUPQS_PtRsSQ7_k-h5EDlg
-      clientId:       persona/chinmaykousik1@gmail.com/events
+      accessToken:    !env TASKCLUSTER_CREDENTIALS_ACCESSTOKEN
+      clientId:       !env TASKCLUSTER_CREDENTIALS_CLIENTID
 # Add more profiles here
