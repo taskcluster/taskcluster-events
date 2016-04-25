@@ -8,7 +8,7 @@ script: npm test
 
 before_install:
 - sudo apt-get install -y build-essential
-- sudo npm install -g node-gyp
+- npm install -g node-gyp
 install: npm install
 
 # encrpyt channel name to get around issue
