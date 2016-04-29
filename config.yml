@@ -1,7 +1,6 @@
 defaults:
   hostname:           https://events.taskcluster.net
   port:               !env:number PORT
-  port:               undefined
   forceSSL:           false
   trustProxy:         false
   influx:
