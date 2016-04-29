@@ -15,6 +15,8 @@ var launch = (profile) => {
     port:               Number(process.env.PORT || cfg.port),
     forceSSL:           cfg.forceSSL,
     trustProxy:         cfg.trustProxy,
+    forceSSL:           cfg.forceSSL,
+    trustProxy:         cfg.trustProxy,
     env:                cfg.env || 'development'
   });
 

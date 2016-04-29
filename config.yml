@@ -1,6 +1,7 @@
 defaults:
   hostname:           https://events.taskcluster.net
   port:               !env:number PORT
+  port:               undefined
   forceSSL:           false
   trustProxy:         false
   influx:
@@ -8,16 +9,6 @@ defaults:
     maxPendingPoints: 250
   events:
     statsComponent:   events
-  pulse:
-    username:         !env PULSE_USERNAME
-    password:         !env PULSE_PASSWORD
-  taskcluster:
-    credentials:
-      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
-      clientId:       !env TASKCLUSTER_CLIENT_ID
-
-production: # profile 'production'
-  hostname:           !env HOSTNAME
 
 test: # profile 'test'
   hostname:           http://localhost
