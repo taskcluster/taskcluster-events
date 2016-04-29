@@ -122,6 +122,31 @@ module.exports = suite('events',() => {
       assert(result.payload.status.taskId === taskId, "Got wrong task id");
     });
   });
+
+  //Should bind
+  it('should bind', () => {
+    var taskId = slugid.v4();
+    var queueEvents = new taskcluster.QueueEvents();
+
+    let bound = new Promise((resolve,reject) => {
+      socket.onmessage = e => {
+        let message = JSON.parse(e.data);
+        debug('message: %s',JSON.stringify(message));
+        assert(message.event === 'bound', "Binding failed");
+        resolve();
+      }
+    });
+    return ready.then(() => {
+      socket.send(JSON.stringify({
+        method  : 'bind',
+        options : queueEvents.taskDefined({ taskId  : taskId }),
+        id      : slugid.v4()
+      }));
+    }).then(() => {
+      return bound;
+    });
+  });
+  
   //Send illegal exchange option to server
   it('bind (illegal exchange)', () => {
     var reqId = slugid.v4();
