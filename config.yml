@@ -1,0 +1,23 @@
+defaults:
+  hostname:           https://events.taskcluster.net
+  port:               !env:number PORT
+  forceSSL:           false
+  trustProxy:         false
+  events:
+    statsComponent:   events
+  pulse:
+    username:         !env PULSE_USERNAME
+    password:         !env PULSE_PASSWORD
+  taskcluster:
+    credentials:
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+      clientId:       !env TASKCLUSTER_CLIENT_ID
+
+production:
+  forceSSL:           true
+  trustProxy:         true
+
+test: # profile 'test'
+  hostname:           http://localhost
+  port:               12345
+# Add more profiles here

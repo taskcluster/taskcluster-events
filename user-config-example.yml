@@ -1,0 +1,13 @@
+# Example of production profile
+production:
+  hostname:   https://example.com
+  port:       12345
+  forceSSL:   false
+  trustProxy: false
+  pulse:
+    username: PULSE_USERNAME
+    password: PULSE_PASSWORD
+  taskcluster:
+    credentials:
+      clientId:     TASKCLUSTER_CLIENT_ID
+      accessToken:  TASKCLUSTER_ACCESS_TOKEN
