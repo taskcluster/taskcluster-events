@@ -21,7 +21,7 @@
     "sockjs": "0.3.16",
     "sockjs-client": "1.0.3",
     "taskcluster-base": "0.12.3",
-    "taskcluster-client": "0.23.17",
+    "taskcluster-client": "^1.6.3",
     "url-join": "^0.0.1",
     "ws": "^1.1.0"
   },
