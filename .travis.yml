@@ -3,7 +3,7 @@ env:
   - DEBUG='* -mocha:* -superagent -express:* -base:validator -base:entity'
 language: node_js
 node_js:
-- '4.4.3'
+- '6.9.0'
 
 addons:
   apt:
