@@ -28,7 +28,9 @@
   "devDependencies": {
     "mocha": "2.4.5"
   },
+  "engine-strict": true,
   "engines": {
-    "node": "^6.9.0"
+    "node": "6.9.0",
+    "yarn": "0.21.3"
   }
 }

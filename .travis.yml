@@ -12,14 +12,13 @@ addons:
     packages:
     - g++-4.8
 env:
+  global:
   - CXX=g++-4.8
 
-script: npm test
-
-before_install:
-- sudo apt-get install -y build-essential
-- npm install -g node-gyp
-install: npm install
+cache:
+  yarn: true
+  directories:
+    - node_modules
 
 # encrpyt channel name to get around issue
 # https://github.com/travis-ci/travis-ci/issues/1094

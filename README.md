@@ -52,7 +52,7 @@ Testing
 >>>>>>> 0206f192d8181a44635c6b5af14649de08ef7410
 2. Add taskcluster credentials to test profile in config.yml. Ensure you have the necessary scopes.
 3. If required add influxDb connection string to default in config.yml
-4. Run `npm test`
+4. `yarn install` and then `yarn test`
 
 Deployment
 ----------
