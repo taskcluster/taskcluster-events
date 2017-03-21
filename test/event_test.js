@@ -26,7 +26,7 @@ module.exports = suite('events',() => {
   }
 
   before(()=>{
-    launch('test').then(serv => {
+    return launch('test').then(serv => {
       server = serv;
     }).then(() => {
       socket = new SockJS(URL);
