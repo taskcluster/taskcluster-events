@@ -7,6 +7,7 @@ var socket  = require('../events/socket');
 var express = require('express');
 var path    = require('path');
 var assert  = require('assert');
+var docs    = require('taskcluster-lib-docs');
 
 var launch = (profile) => {
   var cfg = base.config({profile:  profile});
@@ -23,14 +24,18 @@ var launch = (profile) => {
   // Serve static content from assets/
   app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
-  return app.createServer().then(server=>{
-    socket.create(server,{
-      credentials:      cfg.pulse,
-      publicUrl:        cfg.hostname,
-      component:        cfg.events.statsComponent
+  return docs.documenter({
+    credentials: cfg.taskcluster.credentials,
+    tier: 'core' })
+    .then(() => app.createServer())
+    .then(server=>{
+      socket.create(server,{
+        credentials:      cfg.pulse,
+        publicUrl:        cfg.hostname,
+        component:        cfg.events.statsComponent
+      });
+      return server;
     });
-    return server;
-  });
 }
 
 // If server.js is executed start the server
