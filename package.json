@@ -1,0 +1,42 @@
+{
+  "name": "taskcluster-events",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js test/*.js",
+    "pretest": "yarn lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/taskcluster/taskcluster-events.git"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "lodash": "^4.6.1",
+    "slugid": "^1.1.0",
+    "taskcluster-client": "^3.1.1",
+    "taskcluster-lib-app": "^3.0.0",
+    "taskcluster-lib-docs": "^4.2.1",
+    "taskcluster-lib-loader": "^2.0.0",
+    "taskcluster-lib-monitor": "^4.0.0",
+    "taskcluster-lib-validate": "^3.1.0",
+    "thirty-two": "^1.0.2",
+    "typed-env-config": "^2.0.0",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "eslint-config-taskcluster": "^3.0.0",
+    "mocha": "^4.0.1",
+    "superagent": "^3.8.2",
+    "taskcluster-lib-testing": "^2.0.2",
+    "url-join": "^2.0.2",
+    "xml2js": "^0.4.19",
+    "xmlbuilder": "^9.0.4"
+  },
+  "engine-strict": true,
+  "engines": {
+    "node": "^8.2.1",
+    "yarn": "^1.0.2"
+  }
+}
