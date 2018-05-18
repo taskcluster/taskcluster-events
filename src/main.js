@@ -25,7 +25,7 @@ let load = loader({
 
   server: {
     requires: ['cfg', 'monitor'],
-    setup: ({cfg, monitor, docs}) => {
+    setup: ({cfg, monitor}) => {
       let app = App({
         port: cfg.server.port,
         publicUrl: cfg.server.publicUrl,
