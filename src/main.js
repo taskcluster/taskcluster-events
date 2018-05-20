@@ -16,8 +16,9 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: 'taskcluster-queue',
+      rootUrl: cfg.monitor.rootUrl,
       credentials: cfg.taskcluster.credentials,
+      projectName: 'taskcluster-events',
       mock: cfg.monitor.mock,
       process,
     }),
@@ -28,11 +29,9 @@ let load = loader({
     setup: ({cfg, monitor}) => {
       let app = App({
         port: cfg.server.port,
-        publicUrl: cfg.server.publicUrl,
         env: cfg.server.env,
         forceSSL: cfg.server.forceSSL,
         trustProxy: cfg.server.trustProxy,
-        rootDocsLink: true,
       });
       return app.createServer();
     },
