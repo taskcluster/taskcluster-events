@@ -22,8 +22,10 @@ var api = new API({
 
 api.declare({
   method: 'get',
-  route: '/connect/:id',
-  name: 'connect'
+  route: '/connect/',
+  name: 'Events-Api',
+  stability: 'API.stability.experimental'
+  // Add inout validation
   title: 'Connect to receive messages',
 },  async function(req,res) {
 
@@ -33,9 +35,28 @@ api.declare({
     res.write('\n');
   };
 
+  res.writeHead(200, {
+    'Connection' : 'keep-alive',
+    'Content-Type' : 'text/event-stream',
+    'Cache-Control' : 'no-cache',
+  });
+
+  // The headers are written without any errors.
+  // This means we are ready to send messages.
+  sendEvent('ready',true);
+
+
   // TODO : add listener = PulseListener
 
   const pingEvent = setInterval(() => sendEvent('ping', { time : new Date()}), 10*1000);
-  
+
+  // Catch errors 
+  // bad exchange will be taken care of by i/p validation
+  // Send 5xx error code otherwise. Make sure that the head is not written.
+  // You can set the response code only once.
+  // If head is written, send an error event.
+
+  // Finally end the response.
+  // Close the listener
 
 })
