@@ -30,7 +30,7 @@ let load = loader({
     setup : ({cfg, monitor}) => builder.build({
       rootUrl:  cfg.taskcluster.rootUrl,
       context:  {
-        connection:  new taskcluster.PulseConnection(cfg.pulse)
+        connection:  new taskcluster.PulseConnection(cfg.pulse),
       },
       monitor:  monitor.prefix('api'),
     }),
@@ -39,15 +39,15 @@ let load = loader({
   server: {
     requires: ['cfg', 'monitor', 'api'],
     setup: ({cfg, monitor, api}) => App({
-        port: cfg.server.port,
-        env: cfg.server.env, // 'development' or 'production'
-        forceSSL: cfg.server.forceSSL,
-        trustProxy: cfg.server.trustProxy,
-        apis: [api],
+      port: cfg.server.port,
+      env: cfg.server.env, // 'development' or 'production'
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
     }),
   },
 
-}, ['profile','process']);
+}, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
 if (!module.parent) {

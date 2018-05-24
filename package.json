@@ -21,7 +21,7 @@
     "typed-env-config": "^2.0.0",
     "uuid": "^3.1.0"
   },
-  "devdependencies": {
+  "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0",
     "mocha": "^4.0.1"
   },
