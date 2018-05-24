@@ -114,7 +114,7 @@ asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
-aws-sdk@^2.30.0:
+aws-sdk@^2.151.0, aws-sdk@^2.30.0:
   version "2.245.1"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.245.1.tgz#756b3b7a5314651920fdbce032d4730f516ef360"
   dependencies:
@@ -781,7 +781,7 @@ has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
 
-hawk@^6.0.2:
+hawk@6.0.2, hawk@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/hawk/-/hawk-6.0.2.tgz#af4d914eb065f9b5ce4d9d11c1cb2126eecc3038"
   dependencies:
@@ -997,7 +997,7 @@ lodash@4.17.4:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
-lodash@^4.0.0, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1:
+lodash@^4.0.0, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
@@ -1573,6 +1573,24 @@ taskcluster-client@^10.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^1.1.0"
 
+taskcluster-lib-api@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-11.0.0.tgz#bc37633eacdbef83328e20c5516b630429729f95"
+  dependencies:
+    ajv "^5.3.0"
+    aws-sdk "^2.151.0"
+    body-parser "1.18.2"
+    debug "^3.1.0"
+    express "4.16.2"
+    hawk "6.0.2"
+    lodash "^4.15.0"
+    promise "^8.0.1"
+    slugid "^1.1.0"
+    taskcluster-client "^10.0.0"
+    taskcluster-lib-scopes "^10.0.0"
+    type-is "^1.6.15"
+    uuid "^3.1.0"
+
 taskcluster-lib-app@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-app/-/taskcluster-lib-app-10.0.0.tgz#d9ab50c0ce52ebeee94f183b755ef2aeba8ec0fa"
@@ -1610,6 +1628,10 @@ taskcluster-lib-monitor@^10.0.0:
     raven "^2.2.1"
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
+
+taskcluster-lib-scopes@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-10.0.0.tgz#2b90666b8e5127a1d367b726de84c7829b57efef"
 
 taskcluster-lib-urls@^1.1.0:
   version "1.1.0"
@@ -1658,7 +1680,7 @@ type-detect@0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-0.1.1.tgz#0ba5ec2a885640e470ea4e8505971900dac58822"
 
-type-is@~1.6.15:
+type-is@^1.6.15, type-is@~1.6.15:
   version "1.6.16"
   resolved "https://registry.yarnpkg.com/type-is/-/type-is-1.6.16.tgz#f89ce341541c672b25ee7ae3c73dee3b2be50194"
   dependencies:
