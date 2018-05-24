@@ -1,0 +1,44 @@
+defaults:
+  taskcluster:
+    rootUrl:        https://events.taskcluster.net
+    credentials:
+      clientId:     !env TASKCLUSTER_CLIENT_ID
+      accessToken:  !env TASKLCSUTER_ACCESS_TOKEN
+  
+  server:
+    port:           !env:number PORT
+    env:            !env NODE_ENV
+    forceSSL:       !env:flag FORCE_SSL
+    trustProxy:     false
+  
+  monitor:
+    mock:           true
+  
+  pulse:
+    username:       !env PULSE_USERNAME
+    password:       !env PULSE_PASSWORD
+
+
+production:
+  server:
+    env:            production
+    forceSSL:       true
+    trustProxy:     true
+
+  monitor:
+    mock:           false
+
+test:
+  taskcluster:
+    rootUrl:        http://localhost:12345
+
+  server:
+    port:           12345
+    env:            development
+    
+
+
+
+
+
+

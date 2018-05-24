@@ -10,7 +10,8 @@ var api = new API({
     'from browsers and cli. There are API endpoints to',
     'bind / unbind to an exchange and pause / resume listening from a queue',
   ].join('\n'),
-
+  serviceName: 'tcevents',
+  version: 'v1',
   errorCodes: {
     InputValidation:  400, // For JSON schema errors (bad exchange).
   },
@@ -20,10 +21,11 @@ var api = new API({
 api.declare({
   method: 'get',
   route: '/connect/',
-  name: 'Events-Api',
-  stability: 'API.stability.experimental',
+  name: 'connect',
+  description: 'Connect to receive messages',
+  stability: API.stability.experimental,
   // Add input validation yml
-  title: 'Connect to receive messages',
+  title: 'Events-Api',
 }, async function(req, res) {
 
   const sendEvent = (kind, data) => {
