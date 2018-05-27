@@ -1,9 +1,9 @@
 let debug = require('debug')('app:main');
-let API = require('taskcluster-lib-api');
+let APIBuilder = require('taskcluster-lib-api');
 let taskcluster = require('taskcluster-client');
 let uuid = require('uuid');
 
-var api = new API({
+let builder = new APIBuilder({
   title:    'AMQP Messages API Documentation',
   description: [
     'This service is responsible for making pulse messages accessible',
@@ -18,16 +18,16 @@ var api = new API({
   context: ['connection'],
 });
 
-api.declare({
+builder.declare({
   method: 'get',
   route: '/connect/',
   name: 'connect',
   description: 'Connect to receive messages',
-  stability: API.stability.experimental,
+  stability: APIBuilder.stability.experimental,
   // Add input validation yml
   title: 'Events-Api',
 }, async function(req, res) {
-
+  console.log("hello");
   const sendEvent = (kind, data) => {
     res.write('event: ' + kind + '\n');
     res.write('data: ' + JSON.stringify(data) + '\n');
@@ -78,3 +78,6 @@ api.declare({
   }
 
 });
+
+// Export api
+module.exports = builder;

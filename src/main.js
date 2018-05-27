@@ -6,6 +6,7 @@ let debug = require('debug')('app:main');
 let config = require('typed-env-config');
 let builder = require('./api');
 let taskcluster = require('taskcluster-client');
+let _  = require('lodash');
 
 // Create component loader
 let load = loader({
@@ -51,9 +52,10 @@ let load = loader({
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  load(process.argv[2], {
-    process: process.argv[2],
-    profile: process.env.NODE_ENV,
+  console.log(process.argv);
+  load(process.argv[3], {
+    process: process.argv[3],
+    profile: process.argv[2],
   }).catch(err => {
     console.log(err.stack);
     process.exit(1);

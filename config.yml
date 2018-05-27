@@ -17,6 +17,7 @@ defaults:
   pulse:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD
+    hostname:       !env PULSE_HOSTNAME
 
 
 production:
@@ -35,10 +36,10 @@ test:
   server:
     port:           12345
     env:            development
-    
 
-
-
-
-
+  pulse:
+    username:       !env PULSE_USERNAME
+    password:       !env PULSE_PASSWORD
+    hostname:       pulse.mozilla.org
+    vhost:          5761
 
