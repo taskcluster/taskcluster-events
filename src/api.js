@@ -39,6 +39,8 @@ builder.declare({
 
     res.writeHead(200, {
       Connection : 'keep-alive',
+      'Access-Control-Allow-Origin: *',
+      'Content-Security-Policy': "connect-src 'self' http://localhost:* ;",
       'Content-Type' : 'text/event-stream',
       'Cache-Control' : 'no-cache',
     });
@@ -52,6 +54,7 @@ builder.declare({
 
     const pingEvent = setInterval(() => sendEvent('ping', {time : new Date()}), 10*1000);
   } catch (err) {
+    console.log(err);
     // Catch errors 
     // bad exchange will be taken care of by i/p validation
     // Send 5xx error code otherwise. Make sure that the head is not written.
