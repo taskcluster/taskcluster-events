@@ -39,7 +39,7 @@ builder.declare({
 
     res.writeHead(200, {
       Connection : 'keep-alive',
-      'Access-Control-Allow-Origin: *',
+      'Access-Control-Allow-Origin': '*',
       'Content-Security-Policy': "connect-src 'self' http://localhost:* ;",
       'Content-Type' : 'text/event-stream',
       'Cache-Control' : 'no-cache',
