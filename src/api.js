@@ -1,4 +1,4 @@
-let debug = require('debug')('app:main');
+let debug = require('debug')('events:api');
 let APIBuilder = require('taskcluster-lib-api');
 let taskcluster = require('taskcluster-client');
 let uuid = require('uuid');
@@ -10,11 +10,9 @@ let builder = new APIBuilder({
     'from browsers and cli. There are API endpoints to',
     'bind / unbind to an exchange and pause / resume listening from a queue',
   ].join('\n'),
-  serviceName: 'tcevents',
+  projectName: 'taskcluster-evnets'
+  serviceName: 'events',
   version: 'v1',
-  errorCodes: {
-    InputValidation:  400, // For JSON schema errors (bad exchange).
-  },
   context: ['connection'],
 });
 
@@ -29,18 +27,19 @@ builder.declare({
 }, async function(req, res) {
   console.log("hello");
   const sendEvent = (kind, data) => {
-    res.write('event: ' + kind + '\n');
-    res.write('data: ' + JSON.stringify(data) + '\n');
-    res.write('\n');
+
+    var event = ['event: ' + kind,
+      'data: ' + JSON.stringify(data),
+      '\n',
+    ].join('\n');
+
+    res.write(event);
   };
 
   let headWritten, pingEvent;
   try {
 
     res.writeHead(200, {
-      Connection : 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Content-Security-Policy': "connect-src 'self' http://localhost:* ;",
       'Content-Type' : 'text/event-stream',
       'Cache-Control' : 'no-cache',
     });
@@ -53,6 +52,7 @@ builder.declare({
     // TODO : add listener = PulseListener
 
     const pingEvent = setInterval(() => sendEvent('ping', {time : new Date()}), 10*1000);
+    await new Promise(resolve => setTimeout(resolve, 100 * 1000));
   } catch (err) {
     console.log(err);
     // Catch errors 
