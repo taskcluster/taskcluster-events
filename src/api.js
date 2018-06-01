@@ -16,6 +16,16 @@ let builder = new APIBuilder({
   context: ['connection'],
 });
 
+
+// Returns JSON.parse(req.query.bindings) if everything goes well
+//   {"bindings" : [ 
+//     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
+//     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
+//   ]};
+var validateBindings = function(bindings) {
+  return JSON.parse(bindings);
+}
+
 builder.declare({
   method: 'get',
   route: '/connect/',
@@ -29,8 +39,18 @@ builder.declare({
   title: 'Events-Api',
 }, async function(req, res) {
   debug("hello");
-  var bindings = JSON.parse(req.query.bindings).bindings;
-  debug("..bindings", bindings);
+
+  // parse and validate 
+  var json_bindings = validateBindings(req.query.bindings);
+
+  // json_bindings.bindings contains array of {exchange, routingKey}
+  if (!json_bindings) {
+    // TODO :  Send error event through sendEvent and close connection.
+    return res.reportError('InvalidRequestArguments', "The bindings are not in specified json format");
+  }
+  debug("..bindings", json_bindings);
+  
+
   let abort;
   const aborted = new Promise((resolve, reject) => abort = reject);
   debug(aborted);

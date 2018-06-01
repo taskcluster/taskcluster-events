@@ -6,9 +6,9 @@ var bindings = {"bindings" : [
     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 ]};
-//console.log(JSON.stringify(bindings));
+
 var json = urlencode(JSON.stringify(bindings));
-//console.log(urlcodeJson.encode(bindings,false));
+
 
 
 
@@ -17,6 +17,7 @@ try{
     es.addEventListener('ping', function (e) {
         console.log(e.data)
     });
+    es.onerror = (err) => console.log(err);
 } catch (err) {
     console.log(err);
 }
