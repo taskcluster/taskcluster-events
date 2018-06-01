@@ -19,6 +19,9 @@ let builder = new APIBuilder({
 builder.declare({
   method: 'get',
   route: '/connect/',
+  query: {
+    bindings: /./,
+  },
   name: 'connect',
   description: 'Connect to receive messages',
   stability: APIBuilder.stability.experimental,
@@ -26,7 +29,8 @@ builder.declare({
   title: 'Events-Api',
 }, async function(req, res) {
   debug("hello");
-
+  var bindings = JSON.parse(req.query.bindings).bindings;
+  debug("..bindings", bindings);
   let abort;
   const aborted = new Promise((resolve, reject) => abort = reject);
   debug(aborted);
