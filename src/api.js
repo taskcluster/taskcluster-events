@@ -2,6 +2,7 @@ let debug = require('debug')('events:api');
 let APIBuilder = require('taskcluster-lib-api');
 let taskcluster = require('taskcluster-client');
 let uuid = require('uuid');
+let _ = require('lodash');
 
 let builder = new APIBuilder({
   title: 'AMQP Messages API Documentation',
@@ -49,7 +50,6 @@ builder.declare({
     return res.reportError('InvalidRequestArguments', "The bindings are not in specified json format");
   }
   debug("..bindings", json_bindings);
-  
 
   let abort;
   const aborted = new Promise((resolve, reject) => abort = reject);
@@ -63,14 +63,11 @@ builder.declare({
         'data: ' + JSON.stringify(data),
         '\n',
       ].join('\n');
-
       res.write(event);
-      debug(".....res.finished", aborted);
-      
+      debug(".....res.finished", aborted); 
     } catch (err) {
       debug("Error in sendEvent: ", err);
     }
-
   };
 
   try {
@@ -86,6 +83,36 @@ builder.declare({
     sendEvent('ready', true);
 
     // TODO : add listener = PulseListener
+    var listener = new taskcluster.PulseListener({
+      prefetch:   5,
+      connection: this.connection,
+      maxLength:  50,
+    });
+    
+    _.forEach(json_bindings.bindings, (entry)=> listener.bind({
+      exchange: entry.exchange,
+      routingKeyPattern: entry.routingKey,
+    }));
+
+    // console.log(listener.connect());
+    // console.log(listener.resume());
+    
+    listener.connect().then(function() {
+      console.log('connected');
+      return listener.resume()
+    }, function(err) {
+      debug("..connect() error", err);
+      console.log(listener);  
+      abort(err);
+    }).then(() =>
+      sendEvent('ready', true));
+    //console.log(listener); 
+
+
+    listener.on('message', (message)=> {
+      sendEvent('message', JSON.stringify(message));
+      console.log(message.payload);
+    });
 
     pingEvent = setInterval(() => sendEvent('ping', {
       time: new Date()
@@ -96,6 +123,7 @@ builder.declare({
         debug("Connection closed remotely");
         reject;
       })),
+      
     ]);
     debug("Abort");
 
