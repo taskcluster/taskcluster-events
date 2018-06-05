@@ -41,5 +41,5 @@ test:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD
     hostname:       pulse.mozilla.org
-    vhost:          5761
+    vhost:          /
 
