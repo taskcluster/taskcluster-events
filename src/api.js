@@ -39,7 +39,7 @@ builder.declare({
   // Add input validation yml
   title: 'Events-Api',
 }, async function(req, res) {
-  debug("hello");
+  debug('hello');
 
   // parse and validate 
   var json_bindings = validateBindings(req.query.bindings);
@@ -49,7 +49,7 @@ builder.declare({
     // TODO :  Send error event through sendEvent and close connection.
     return res.reportError('InvalidRequestArguments', "The bindings are not in specified json format");
   }
-  debug("..bindings", json_bindings);
+  debug('..bindings', json_bindings);
 
   let abort;
   const aborted = new Promise((resolve, reject) => abort = reject);
@@ -63,10 +63,11 @@ builder.declare({
         'data: ' + JSON.stringify(data),
         '\n',
       ].join('\n');
+      //debug("sendEvent: ", event);
       res.write(event);
-      debug(".....res.finished", aborted); 
+      debug('.....res.finished', aborted); 
     } catch (err) {
-      debug("Error in sendEvent: ", err);
+      debug('Error in sendEvent:');
     }
   };
 
@@ -77,10 +78,6 @@ builder.declare({
       'Cache-Control': 'no-cache',
     });
     headWritten = true;
-
-    // The headers are written without any errors.
-    // This means we are ready to send messages.
-    sendEvent('ready', true);
 
     // TODO : add listener = PulseListener
     var listener = new taskcluster.PulseListener({
@@ -102,16 +99,16 @@ builder.declare({
       return listener.resume()
     }, function(err) {
       debug("..connect() error", err);
-      console.log(listener);  
       abort(err);
     }).then(() =>
-      sendEvent('ready', true));
-    //console.log(listener); 
+      // The headers are written without any errors.
+      // This means we are ready to send messages.
+      sendEvent('ready', {}));
 
 
     listener.on('message', (message)=> {
-      sendEvent('message', JSON.stringify(message));
-      console.log(message.payload);
+      sendEvent('message', message.payload);
+      //console.log(message.payload);
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -120,12 +117,12 @@ builder.declare({
     await Promise.all([
       aborted,
       new Promise((resolve, reject) => res.once('finished', () => {
-        debug("Connection closed remotely");
+        debug('Connection closed remotely');
         reject;
       })),
       
     ]);
-    debug("Abort");
+    debug('Abort');
 
   } catch (err) {
     debug('Error : ', err);
