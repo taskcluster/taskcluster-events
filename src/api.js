@@ -24,7 +24,7 @@ let builder = new APIBuilder({
 //     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 //   ]};
 var validateBindings = function(bindings) {
-  return JSON.parse(bindings);
+  //return JSON.parse(bindings);
 }
 
 builder.declare({
@@ -55,15 +55,13 @@ builder.declare({
   const aborted = new Promise((resolve, reject) => abort = reject);
   debug(aborted);
 
-  req.on('close', (err)=> {debug('aborting');abort(err);});
-
   const sendEvent = (kind, data) => {
     try {
       var event = ['event: ' + kind,
         'data: ' + JSON.stringify(data),
         '\n',
       ].join('\n');
-      //debug("sendEvent: ", event);
+      
       res.write(event);
       debug('.....res.finished', aborted); 
     } catch (err) {
@@ -79,7 +77,6 @@ builder.declare({
     });
     headWritten = true;
 
-    // TODO : add listener = PulseListener
     var listener = new taskcluster.PulseListener({
       prefetch:   5,
       connection: this.connection,
@@ -90,9 +87,6 @@ builder.declare({
       exchange: entry.exchange,
       routingKeyPattern: entry.routingKey,
     }));
-
-    // console.log(listener.connect());
-    // console.log(listener.resume());
     
     listener.connect().then(function() {
       console.log('connected');
@@ -101,14 +95,13 @@ builder.declare({
       debug("..connect() error", err);
       abort(err);
     }).then(() =>
-      // The headers are written without any errors.
+      // The listener is connected .
       // This means we are ready to send messages.
       sendEvent('ready', {}));
 
 
     listener.on('message', (message)=> {
       sendEvent('message', message.payload);
-      //console.log(message.payload);
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -116,9 +109,9 @@ builder.declare({
     }), 3 * 1000);
     await Promise.all([
       aborted,
-      new Promise((resolve, reject) => res.once('finished', () => {
+      new Promise((resolve, reject) => req.once('close', () => {
         debug('Connection closed remotely');
-        reject;
+        reject();
       })),
       
     ]);
@@ -142,15 +135,14 @@ builder.declare({
     if (pingEvent) {
       clearInterval(pingEvent);
     }
+    // Close the listener
+    listener.close();
 
     if (!res.finished) {
       clearInterval(pingEvent);
       debug('Closing connection');
       res.end();
     }
-
-    // Finally end the response.
-    // Close the listener
   }
 
 });
