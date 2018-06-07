@@ -24,7 +24,7 @@ let builder = new APIBuilder({
 //     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 //   ]};
 var validateBindings = function(bindings) {
-  //return JSON.parse(bindings);
+  return JSON.parse(bindings);
 }
 
 builder.declare({
@@ -41,20 +41,6 @@ builder.declare({
 }, async function(req, res) {
   debug('hello');
 
-  // parse and validate 
-  var json_bindings = validateBindings(req.query.bindings);
-
-  // json_bindings.bindings contains array of {exchange, routingKey}
-  if (!json_bindings) {
-    // TODO :  Send error event through sendEvent and close connection.
-    return res.reportError('InvalidRequestArguments', "The bindings are not in specified json format");
-  }
-  debug('..bindings', json_bindings);
-
-  let abort;
-  const aborted = new Promise((resolve, reject) => abort = reject);
-  debug(aborted);
-
   const sendEvent = (kind, data) => {
     try {
       var event = ['event: ' + kind,
@@ -68,6 +54,19 @@ builder.declare({
       debug('Error in sendEvent:');
     }
   };
+
+  let abort;
+  const aborted = new Promise((resolve, reject) => abort = reject);
+  
+  // parse and validate 
+  var json_bindings = validateBindings(req.query.bindings);
+
+  // json_bindings.bindings contains array of {exchange, routingKey}
+  if (!json_bindings) {
+    debug('Error : InvalidRequestArguments');
+    res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format',);
+    abort();
+  }
 
   try {
 
@@ -88,16 +87,13 @@ builder.declare({
       routingKeyPattern: entry.routingKey,
     }));
     
-    listener.connect().then(function() {
-      console.log('connected');
-      return listener.resume()
+    
+    listener.resume().then( function() {
+      sendEvent('ready', {})
     }, function(err) {
-      debug("..connect() error", err);
+      debug("Can't resume listener")
       abort(err);
-    }).then(() =>
-      // The listener is connected .
-      // This means we are ready to send messages.
-      sendEvent('ready', {}));
+    });
 
 
     listener.on('message', (message)=> {
@@ -107,18 +103,19 @@ builder.declare({
     pingEvent = setInterval(() => sendEvent('ping', {
       time: new Date()
     }), 3 * 1000);
+
     await Promise.all([
       aborted,
-      new Promise((resolve, reject) => req.once('close', () => {
-        debug('Connection closed remotely');
+      new Promise((resolve, reject) => req.once('close', reject)),
+      new Promise((resolve,reject) => listener.on('error', (err) => {
+        debug('PulseListener Error : '. err);
         reject();
-      })),
+      }))
       
     ]);
-    debug('Abort');
 
   } catch (err) {
-    debug('Error : ', err);
+    debug('Error : ', JSON.stringify(err));
     // Catch errors 
     // bad exchange will be taken care of by i/p validation
     // Send 5xx error code otherwise. Make sure that the head is not written.
@@ -129,19 +126,21 @@ builder.declare({
     }
     // TODO : Find a suitable error message depending on err.
     // Most likely these will be PulseListener errors.
-    sendEvent('error', true);
+    sendEvent('error', err);
   } finally {
 
     if (pingEvent) {
+      debug('unping');
       clearInterval(pingEvent);
     }
     // Close the listener
     listener.close();
 
     if (!res.finished) {
-      clearInterval(pingEvent);
-      debug('Closing connection');
+      debug('Ending response');
       res.end();
+      debug(res.finished);
+
     }
   }
 

@@ -23,7 +23,11 @@ try{
     es.addEventListener('message', function (e) {
         console.log(e);
     });
+    es.addEventListener('error', function (e) {
+        console.log(e);
+    });
     es.onerror = (err) => console.log(err);
 } catch (err) {
+    console.log("error");
     console.log(err);
 }
