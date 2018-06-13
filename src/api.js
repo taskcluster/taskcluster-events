@@ -41,10 +41,22 @@ builder.declare({
 }, async function(req, res) {
   debug('hello');
 
+  // If the last event id is '-', send a 204 error blocking all reconnects.
+  // No reconnect on 204 is not yet supported on EventSource.
+  // Clients using that need to use es.close() to stop error messages.
+  if(req.headers["last-event-id"]) {
+    return res.reportError(204,"Not allowing reconnects");
+    abort();
+  }
+
+  let abort;
+  const aborted = new Promise((resolve, reject) => abort = reject);
+
   const sendEvent = (kind, data) => {
     try {
       var event = ['event: ' + kind,
         'data: ' + JSON.stringify(data),
+        'id: -',
         '\n',
       ].join('\n');
       
@@ -52,11 +64,9 @@ builder.declare({
       debug('.....res.finished', aborted); 
     } catch (err) {
       debug('Error in sendEvent:');
+      abort(err);
     }
   };
-
-  let abort;
-  const aborted = new Promise((resolve, reject) => abort = reject);
   
   // parse and validate 
   var json_bindings = validateBindings(req.query.bindings);
@@ -64,8 +74,7 @@ builder.declare({
   // json_bindings.bindings contains array of {exchange, routingKey}
   if (!json_bindings) {
     debug('Error : InvalidRequestArguments');
-    res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format',);
-    abort();
+    return res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format',);
   }
 
   try {
@@ -87,7 +96,6 @@ builder.declare({
       routingKeyPattern: entry.routingKey,
     }));
     
-    
     listener.resume().then( function() {
       sendEvent('ready', {})
     }, function(err) {
@@ -95,10 +103,14 @@ builder.declare({
       abort(err);
     });
 
-
     listener.on('message', (message)=> {
       sendEvent('message', message.payload);
     });
+
+    listener.on('error', (err) => {
+      debug('listener Error', err);
+      abort(err);
+    })
 
     pingEvent = setInterval(() => sendEvent('ping', {
       time: new Date()
@@ -111,11 +123,16 @@ builder.declare({
         debug('PulseListener Error : '. err);
         reject();
       }))
-      
     ]);
 
   } catch (err) {
-    debug('Error : ', JSON.stringify(err));
+    debug('Error : %j', err.message);
+
+    var errorMessage = "Unknown Internal Error";
+    if (err.code === 404) {
+      errorMessage = err.message;
+    }
+
     // Catch errors 
     // bad exchange will be taken care of by i/p validation
     // Send 5xx error code otherwise. Make sure that the head is not written.
@@ -124,9 +141,10 @@ builder.declare({
     if (!headWritten) {
       res.reportError(500, 'Something went wrong. Make another request to retry.');
     }
+
     // TODO : Find a suitable error message depending on err.
     // Most likely these will be PulseListener errors.
-    sendEvent('error', err);
+    sendEvent('error', errorMessage);
   } finally {
 
     if (pingEvent) {
@@ -139,8 +157,6 @@ builder.declare({
     if (!res.finished) {
       debug('Ending response');
       res.end();
-      debug(res.finished);
-
     }
   }
 

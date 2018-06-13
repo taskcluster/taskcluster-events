@@ -26,7 +26,8 @@
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "^4.0.1"
+    "mocha": "^4.0.1",
+    "taskcluster-lib-testing": "^11.0.0"
   },
   "engine-strict": true,
   "engines": {
