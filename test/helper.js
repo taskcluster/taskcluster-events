@@ -13,7 +13,6 @@ var helper = module.exports = {load, loadOptions};
 // Load configuration
 var cfg = config({profile});
 
-
 // Configure PulseTestReceiver
 helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
 
@@ -23,7 +22,7 @@ var webServer = null;
 mocha.before(async () => {
   // Create mock authentication server
   webServer = await load('server', loadOptions);
-  debug("Server Setup")
+  debug('Server Setup');
 });
   
 // Cleanup after tests

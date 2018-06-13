@@ -17,7 +17,6 @@ let builder = new APIBuilder({
   context: ['connection'],
 });
 
-
 // Returns JSON.parse(req.query.bindings) if everything goes well
 //   {"bindings" : [ 
 //     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
@@ -25,7 +24,7 @@ let builder = new APIBuilder({
 //   ]};
 var validateBindings = function(bindings) {
   return JSON.parse(bindings);
-}
+};
 
 builder.declare({
   method: 'get',
@@ -44,8 +43,8 @@ builder.declare({
   // If the last event id is '-', send a 204 error blocking all reconnects.
   // No reconnect on 204 is not yet supported on EventSource.
   // Clients using that need to use es.close() to stop error messages.
-  if(req.headers["last-event-id"]) {
-    return res.reportError(204,"Not allowing reconnects");
+  if (req.headers['last-event-id']) {
+    return res.reportError(204, 'Not allowing reconnects');
     abort();
   }
 
@@ -74,8 +73,8 @@ builder.declare({
   // json_bindings.bindings contains array of {exchange, routingKey}
   if (!json_bindings) {
     debug('Error : InvalidRequestArguments');
-    return res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format',);
-  }
+    return res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format');
+  } 
 
   try {
 
@@ -96,12 +95,13 @@ builder.declare({
       routingKeyPattern: entry.routingKey,
     }));
     
-    listener.resume().then( function() {
-      sendEvent('ready', {})
-    }, function(err) {
-      debug("Can't resume listener")
-      abort(err);
-    });
+    listener.resume().then(
+      () => {sendEvent('ready', {});}, 
+      (err) => {
+        debug('Can\'t resume listener');
+        abort(err);
+      }
+    );
 
     listener.on('message', (message)=> {
       sendEvent('message', message.payload);
@@ -110,25 +110,25 @@ builder.declare({
     listener.on('error', (err) => {
       debug('listener Error', err);
       abort(err);
-    })
+    });
 
     pingEvent = setInterval(() => sendEvent('ping', {
-      time: new Date()
+      time: new Date(),
     }), 3 * 1000);
 
     await Promise.all([
       aborted,
       new Promise((resolve, reject) => req.once('close', reject)),
-      new Promise((resolve,reject) => listener.on('error', (err) => {
+      new Promise((resolve, reject) => listener.on('error', (err) => {
         debug('PulseListener Error : '. err);
-        reject();
-      }))
+        reject(err);
+      })),
     ]);
 
   } catch (err) {
     debug('Error : %j', err.message);
 
-    var errorMessage = "Unknown Internal Error";
+    var errorMessage = 'Unknown Internal Error';
     if (err.code === 404) {
       errorMessage = err.message;
     }
