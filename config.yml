@@ -1,6 +1,6 @@
 defaults:
   taskcluster:
-    rootUrl:        https://events.taskcluster.net
+    rootUrl:        https://taskcluster-events-staging.herokuapp.com/ 
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKLCSUTER_ACCESS_TOKEN
