@@ -23,6 +23,7 @@ let builder = new APIBuilder({
 //     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 //   ]};
 var validateBindings = function(bindings) {
+
   return JSON.parse(bindings);
 };
 
@@ -60,7 +61,7 @@ builder.declare({
       ].join('\n');
       
       res.write(event);
-      debug('.....res.finished', aborted); 
+      debug('..sendEvent', event); 
     } catch (err) {
       debug('Error in sendEvent:');
       abort(err);
@@ -144,6 +145,7 @@ builder.declare({
 
     // TODO : Find a suitable error message depending on err.
     // Most likely these will be PulseListener errors.
+    debug('Error message : ', errorMessage);
     sendEvent('error', errorMessage);
   } finally {
 
