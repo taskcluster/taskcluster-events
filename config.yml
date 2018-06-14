@@ -18,6 +18,7 @@ defaults:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
+    vhost:          /
 
 
 production:
