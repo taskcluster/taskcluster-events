@@ -1,24 +1,8 @@
 suite('Get messages', function() {
-  let EventSource = require('eventsource');
-  let urlencode = require('urlencode');
   let debug       = require('debug')('test:get');
   let assert      = require('assert');
   let helper = require('./helper');
   let _ = require('lodash');
-
-  let getControls = bindings => {
-    let json = urlencode(JSON.stringify(bindings));
-    var es = new EventSource('http://localhost:12345/api/events/v1/connect/?bindings='+json);
-
-    var pass, fail;
-    var resolve = new Promise((resolve, reject) => {pass = resolve; fail= reject;});
-    return {
-      es:      es,
-      resolve: resolve,
-      pass:    pass,
-      fail:    fail, 
-    };
-  };
 
   // Everything is fine. We should receive pulse messages as usual
   test('Exchange is correct', async () => {
@@ -26,7 +10,8 @@ suite('Get messages', function() {
       {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : '#'},
     ]};
 
-    let controls = getControls(bindings);
+    let controls = helper.connect(bindings);
+    //controls = {es, resolve, pass, fail}
     let es = controls.es;
 
     es.addEventListener('message', (msg) => {
@@ -50,7 +35,8 @@ suite('Get messages', function() {
       {exchange :  'exchange/random/does-not-exist', routingKey : '#'},
     ]};
 
-    let controls = getControls(bindings);
+    let controls = helper.connect(bindings);
+    //controls = {es, resolve, pass, fail}
     let es = controls.es;
 
     es.addEventListener('error', (e) => {
@@ -70,7 +56,8 @@ suite('Get messages', function() {
       {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : 'abc'},
     ]};
 
-    let controls = getControls(bindings);
+    let controls = helper.connect(bindings);
+    //controls = {es, resolve, pass, fail}
     let es = controls.es;
 
     es.addEventListener('message', (e) => {
