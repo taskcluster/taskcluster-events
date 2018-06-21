@@ -35,6 +35,7 @@ suite('Get messages', function() {
     });
 
     es.addEventListener('error', (err) => {
+      debug(err);
       es.close();
       assert(false);
       controls.fail(err);
@@ -64,7 +65,7 @@ suite('Get messages', function() {
   });
 
   // Bad routingKey. Should not get any messages.
-  test.only('Arbitrary routingKey', async () => {
+  test.skip('Arbitrary routingKey', async () => {
     let bindings = {bindings : [ 
       {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : 'abc'},
     ]};

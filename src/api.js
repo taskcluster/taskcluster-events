@@ -23,8 +23,24 @@ let builder = new APIBuilder({
 //     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 //   ]};
 var validateBindings = function(bindings) {
-
-  return JSON.parse(bindings);
+  try {
+    let json_bindings = JSON.parse(bindings);
+    if (String(Object.keys(json_bindings)) !== String(['bindings'])) {
+      throw new Error('The json query should have only one key i.e. `bindings`.');
+    }  
+    json_bindings = json_bindings.bindings;
+    if (!Array.isArray(json_bindings)) {
+      throw new Error('Bindings must be an array of {exchange, routingKey}');
+    }
+    json_bindings.map(binding => {
+      let keys = Object.keys(binding);
+      if (keys.length !=2 || !binding.hasOwnProperty('routingKey') || !binding.hasOwnProperty('exchange')) {
+        throw new Error('Each binding must have only two fields - exchange and routingKey');
+      }
+    });
+  } catch (e) {
+    return e;
+  }
 };
 
 builder.declare({
@@ -69,13 +85,14 @@ builder.declare({
   };
   
   // parse and validate 
-  var json_bindings = validateBindings(req.query.bindings);
+  let details = validateBindings(req.query.bindings);
+  debug(details);
+  if (details) {
+    abort({code:404, message:details.message});
+  }
 
   // json_bindings.bindings contains array of {exchange, routingKey}
-  if (!json_bindings) {
-    debug('Error : InvalidRequestArguments');
-    return res.reportError('InvalidRequestArguments', 'The bindings are not in specified json format');
-  } 
+  let json_bindings = JSON.parse(req.query.bindings);
 
   try {
 
@@ -127,8 +144,7 @@ builder.declare({
     ]);
 
   } catch (err) {
-    debug('Error : %j', err.message);
-
+    debug('Error : %j', err.stack);
     var errorMessage = 'Unknown Internal Error';
     if (err.code === 404) {
       errorMessage = err.message;

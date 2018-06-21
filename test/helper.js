@@ -1,8 +1,8 @@
 let mocha           = require('mocha');
 let debug           = require('debug')('test:helper');
 let load            = require('../src/main');
-var config        = require('typed-env-config');
-var testing       = require('taskcluster-lib-testing');
+let config          = require('typed-env-config');
+let testing         = require('taskcluster-lib-testing');
 
 const profile = 'test';
 let loadOptions = {profile, process: 'test'};
