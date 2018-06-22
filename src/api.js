@@ -17,30 +17,36 @@ let builder = new APIBuilder({
   context: ['connection'],
 });
 
-// Returns JSON.parse(req.query.bindings) if everything goes well
+// Returns JSON.parse(bindings) if everything goes well
 //   {"bindings" : [ 
 //     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
 //     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
 //   ]};
-var validateBindings = function(bindings) {
-  try {
-    let json_bindings = JSON.parse(bindings);
-    if (String(Object.keys(json_bindings)) !== String(['bindings'])) {
-      throw new Error('The json query should have only one key i.e. `bindings`.');
-    }  
-    json_bindings = json_bindings.bindings;
-    if (!Array.isArray(json_bindings)) {
-      throw new Error('Bindings must be an array of {exchange, routingKey}');
-    }
-    json_bindings.map(binding => {
-      let keys = Object.keys(binding);
-      if (keys.length !=2 || !binding.hasOwnProperty('routingKey') || !binding.hasOwnProperty('exchange')) {
-        throw new Error('Each binding must have only two fields - exchange and routingKey');
+var parseAndValidateBindings = function(bindings) {
+  return new Promise((resolve, reject) => {
+    try {
+      let json_bindings = JSON.parse(bindings);
+      if (String(Object.keys(json_bindings)) !== String(['bindings'])) {
+        throw new Error('The json query should have only one key i.e. `bindings`.');
+      }  
+
+      // Reduce json_bindings to an array of exchanges.
+      json_bindings = json_bindings.bindings;
+      if (!Array.isArray(json_bindings)) {
+        throw new Error('Bindings must be an array of {exchange, routingKey}');
       }
-    });
-  } catch (e) {
-    return e;
-  }
+      json_bindings.map(binding => {
+        let keys = Object.keys(binding);
+        if (keys.length !=2 || !binding.hasOwnProperty('routingKey') || !binding.hasOwnProperty('exchange')) {
+          throw new Error('Each binding must have only two fields - exchange and routingKey');
+        }
+      });
+      resolve(json_bindings);
+    } catch (e) {
+      // A 404 code is required to send the error message without leaking internal information
+      reject({code:404, message:e.message});
+    }
+  });
 };
 
 builder.declare({
@@ -83,16 +89,6 @@ builder.declare({
       abort(err);
     }
   };
-  
-  // parse and validate 
-  let details = validateBindings(req.query.bindings);
-  debug(details);
-  if (details) {
-    abort({code:404, message:details.message});
-  }
-
-  // json_bindings.bindings contains array of {exchange, routingKey}
-  let json_bindings = JSON.parse(req.query.bindings);
 
   try {
 
@@ -102,13 +98,15 @@ builder.declare({
     });
     headWritten = true;
 
+    let json_bindings = await parseAndValidateBindings(req.query.bindings);
+    
     var listener = new taskcluster.PulseListener({
       prefetch:   5,
       connection: this.connection,
       maxLength:  50,
     });
     
-    _.forEach(json_bindings.bindings, (entry)=> listener.bind({
+    _.forEach(json_bindings, (entry)=> listener.bind({
       exchange: entry.exchange,
       routingKeyPattern: entry.routingKey,
     }));
@@ -144,7 +142,7 @@ builder.declare({
     ]);
 
   } catch (err) {
-    debug('Error : %j', err.stack);
+    debug('Error : %j', err.message, err.code);
     var errorMessage = 'Unknown Internal Error';
     if (err.code === 404) {
       errorMessage = err.message;
