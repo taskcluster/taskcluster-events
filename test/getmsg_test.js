@@ -1,5 +1,5 @@
 suite('Get messages', function() {
-  let debug       = require('debug')('test:get');
+  let debug       = require('debug')('test:get_msg');
   let assert      = require('assert');
   let helper = require('./helper');
   let _ = require('lodash');
@@ -20,7 +20,6 @@ suite('Get messages', function() {
     });
 
     es.addEventListener('error', (err) => {
-      debug(err);
       es.close();
       assert(false);
       controls.fail(err);
