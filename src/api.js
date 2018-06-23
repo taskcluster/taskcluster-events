@@ -11,7 +11,7 @@ let builder = new APIBuilder({
     'from browsers and cli. There are API endpoints to',
     'bind / unbind to an exchange and pause / resume listening from a queue',
   ].join('\n'),
-  projectName: 'taskcluster-evnets',
+  projectName: 'taskcluster-events',
   serviceName: 'events',
   version: 'v1',
   context: ['connection'],
@@ -26,7 +26,7 @@ var parseAndValidateBindings = function(bindings) {
   return new Promise((resolve, reject) => {
     try {
       let json_bindings = JSON.parse(bindings);
-      if (String(Object.keys(json_bindings)) !== String(['bindings'])) {
+      if (String(Object.keys(json_bindings)) !== 'bindings') {
         throw new Error('The json query should have only one key i.e. `bindings`.');
       }  
 
@@ -35,10 +35,9 @@ var parseAndValidateBindings = function(bindings) {
       if (!Array.isArray(json_bindings)) {
         throw new Error('Bindings must be an array of {exchange, routingKey}');
       }
-      json_bindings.map(binding => {
-        let keys = Object.keys(binding);
-        if (keys.length !=2 || !binding.hasOwnProperty('routingKey') || !binding.hasOwnProperty('exchange')) {
-          throw new Error('Each binding must have only two fields - exchange and routingKey');
+      _.forEach(json_bindings, binding => {
+        if (!('routingKey' in binding) || !('exchange' in binding)) {
+          throw new Error('Binding must include `exchange` and `routingKey` fields');
         }
       });
       resolve(json_bindings);
@@ -68,10 +67,9 @@ builder.declare({
   // Clients using that need to use es.close() to stop error messages.
   if (req.headers['last-event-id']) {
     return res.reportError(204, 'Not allowing reconnects');
-    abort();
   }
 
-  let abort;
+  let abort, headWritten;
   const aborted = new Promise((resolve, reject) => abort = reject);
 
   const sendEvent = (kind, data) => {
@@ -106,7 +104,7 @@ builder.declare({
       maxLength:  50,
     });
     
-    _.forEach(json_bindings, (entry)=> listener.bind({
+    _.forEach(json_bindings, entry => listener.bind({
       exchange: entry.exchange,
       routingKeyPattern: entry.routingKey,
     }));
@@ -119,11 +117,11 @@ builder.declare({
       }
     );
 
-    listener.on('message', (message)=> {
+    listener.on('message', message=> {
       sendEvent('message', message.payload);
     });
 
-    listener.on('error', (err) => {
+    listener.on('error', err => {
       debug('listener Error', err);
       abort(err);
     });
@@ -135,7 +133,7 @@ builder.declare({
     await Promise.all([
       aborted,
       new Promise((resolve, reject) => req.once('close', reject)),
-      new Promise((resolve, reject) => listener.on('error', (err) => {
+      new Promise((resolve, reject) => listener.on('error', err => {
         debug('PulseListener Error : '. err);
         reject(err);
       })),

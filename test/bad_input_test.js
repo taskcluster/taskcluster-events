@@ -39,7 +39,7 @@ suite('Failed Input Validation', function() {
     await controls.resolve;
   });
 
-  test('A binding has more than 2 fields', async () => {
+  test.skip('A binding has more than 2 fields', async () => {
     let bindings = {bindings : [ 
       {exchange :  'exchange/random/does-not-exist', routingKey : '#', foo : 'bar'},
     ]};
