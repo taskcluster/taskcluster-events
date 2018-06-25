@@ -69,17 +69,12 @@ builder.declare({
     return res.reportError(204, 'Not allowing reconnects');
   }
 
-  let abort, headWritten;
+  let abort, headWritten, pingEvent;
   const aborted = new Promise((resolve, reject) => abort = reject);
 
-  const sendEvent = (kind, data) => {
+  const sendEvent = (kind, data={}) => {
     try {
-      var event = ['event: ' + kind,
-        'data: ' + JSON.stringify(data),
-        'id: -',
-        '\n',
-      ].join('\n');
-      
+      const event = `event: ${kind}\ndata: ${JSON.stringify(data)}\nid: -\n\n`;
       res.write(event);
       debug('..sendEvent', event); 
     } catch (err) {
@@ -110,14 +105,14 @@ builder.declare({
     }));
     
     listener.resume().then(
-      () => {sendEvent('ready', {});}, 
+      () => {sendEvent('ready');}, 
       (err) => {
         debug('Can\'t resume listener');
         abort(err);
       }
     );
 
-    listener.on('message', message=> {
+    listener.on('message', message => {
       sendEvent('message', message.payload);
     });
 
