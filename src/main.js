@@ -21,6 +21,7 @@ let load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
       projectName: 'taskcluster-events',
+      enable: cfg.monitor.enable,
       mock: cfg.monitor.mock, // false in production
       process,
     }),

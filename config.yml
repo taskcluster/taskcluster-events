@@ -13,18 +13,18 @@ defaults:
   
   monitor:
     mock:           true
+    enable:         !env:bool MONITORING_ENABLE
   
   pulse:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
-    vhost:          /
+    vhost:          !env PULSE_VHOST
 
 
 production:
   server:
     env:            production
-    forceSSL:       true
     trustProxy:     true
 
   monitor:
@@ -33,6 +33,9 @@ production:
 test:
   taskcluster:
     rootUrl:        http://localhost:12345
+
+  monitor:
+    enable:         false
 
   server:
     port:           12345
