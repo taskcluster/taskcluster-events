@@ -1,20 +1,37 @@
-suite('Get messages', function() {
-  let debug       = require('debug')('test:get_msg');
-  let assert      = require('assert');
-  let helper = require('./helper');
-  let _ = require('lodash');
+const debug     = require('debug')('test:get_msg');
+const assert    = require('assert');
+const helper    = require('./helper');
+const _         = require('lodash');
 
-  // Everything is fine. We should receive pulse messages as usual
+helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withServer(mock, skipping);
+
   test('Exchange is correct', async () => {
     let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
     ]};
 
     let controls = helper.connect(bindings);
+    debug('..controls', controls);
     //controls = {es, resolve, pass, fail}
     let es = controls.es;
 
+    es.addEventListener('ready', msg => {
+      const message = {
+        exchange: 'exchange/taskcluster-foo/v1/bar',
+        routingKey: 'some.route',
+        routes: ['some.other.routes'],
+        payload: {
+          status: 'fooIsBar',
+        },
+      };
+
+      helper.listeners.slice(-1)[0].fakeMessage(message);
+    });
+
     es.addEventListener('message', (msg) => {
+      assert(JSON.parse(msg.data).status === 'fooIsBar');
       es.close();
       controls.pass();
     });
@@ -28,41 +45,4 @@ suite('Get messages', function() {
     await controls.resolve;
   });
 
-  // Wrong exchange. Should get 404
-  test.skip('Exchange does not exist', async () => {
-    let bindings = {bindings : [ 
-      {exchange :  'exchange/random/does-not-exist', routingKey : '#'},
-    ]};
-
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('error', (e) => {
-      error = e.data;
-      assert(_.includes(error, '404'));
-      assert(_.includes(error, 'no exchange'));
-      es.close();
-      controls.pass();
-    });
-
-    await controls.resolve;
-  });
-
-  // Bad routingKey. Should not get any messages.
-  test.skip('Arbitrary routingKey', async () => {
-    let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : 'abc'},
-    ]};
-
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('message', (e) => {
-      es.close();
-      controls.fail();
-    });
-    await controls.resolve;
-  });
 });

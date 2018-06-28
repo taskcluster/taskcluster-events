@@ -67,10 +67,9 @@ let load = loader({
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  console.log(process.argv);
-  load(process.argv[3], {
-    process: process.argv[3],
-    profile: process.argv[2],
+  load(process.argv[2], {
+    process: process.argv[2],
+    profile: process.env.NODE_ENV,
   }).catch(err => {
     console.log(err.stack);
     process.exit(1);

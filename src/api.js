@@ -94,7 +94,8 @@ builder.declare({
     let json_bindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(json_bindings);
-    debug('listener created');
+    sendEvent('ready');
+    debug('listener created', listener);
     
     listener.on('message', message => {
       sendEvent('message', message.payload);

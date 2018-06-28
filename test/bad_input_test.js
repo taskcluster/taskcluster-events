@@ -1,13 +1,15 @@
-suite('Failed Input Validation', function() {
-  let debug       = require('debug')('test:bad_input');
-  let assert      = require('assert');
-  let helper = require('./helper');
-  let _ = require('lodash');
+const debug     = require('debug')('test:get_msg');
+const assert    = require('assert');
+const helper    = require('./helper');
+const _         = require('lodash');
 
-  // Wrong exchange. Should get 404
+helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withServer(mock, skipping);
+
   test('More than one key in query', async () => {
     let bindings = {bindings : [ 
-      {exchange :  'exchange/random/does-not-exist', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
     ], foo: 'bar'};
 
     let controls = helper.connect(bindings);
@@ -24,7 +26,7 @@ suite('Failed Input Validation', function() {
   });
 
   test('Bindings is not an array', async () => {
-    let bindings = {bindings : {exchange :  'exchange/random/does-not-exist', routingKey : '#'}};
+    let bindings = {bindings : {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'}};
 
     let controls = helper.connect(bindings);
     //controls = {es, resolve, pass, fail}
@@ -33,24 +35,6 @@ suite('Failed Input Validation', function() {
     es.addEventListener('error', (e) => {
       error = e.data;
       assert(_.includes(error, 'Bindings must be an array of {exchange, routingKey}'));
-      es.close();
-      controls.pass();
-    });
-    await controls.resolve;
-  });
-
-  test.skip('A binding has more than 2 fields', async () => {
-    let bindings = {bindings : [ 
-      {exchange :  'exchange/random/does-not-exist', routingKey : '#', foo : 'bar'},
-    ]};
-
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('error', (e) => {
-      error = e.data;
-      assert(_.includes(error, 'Each binding must have only two fields - exchange and routingKey'));
       es.close();
       controls.pass();
     });

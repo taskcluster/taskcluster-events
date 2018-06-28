@@ -25,7 +25,6 @@ Listeners.prototype.setup = function() {
   assert(this.listeners === null, 'Cannot setup twice');
 
   this.connection = new taskcluster.PulseConnection(this.credentials);
-  debug(this.connection);
   this.listeners = [];
 };
 
@@ -45,17 +44,15 @@ Listeners.prototype.createListener = async function(bindings) {
     }));
 
     this.listeners.push(listener);
-
     await listener.resume();
+    
     return listener;
-
   } catch (err) {
     err.code = 404;
     debug(err);
     this.closeListener(listener);
     throw err;
   }
-
 };
 
 /** Close and remove listener from this.listeners */
