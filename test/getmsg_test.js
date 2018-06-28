@@ -29,7 +29,7 @@ suite('Get messages', function() {
   });
 
   // Wrong exchange. Should get 404
-  test('Exchange does not exist', async () => {
+  test.skip('Exchange does not exist', async () => {
     let bindings = {bindings : [ 
       {exchange :  'exchange/random/does-not-exist', routingKey : '#'},
     ]};

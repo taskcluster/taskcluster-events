@@ -6,6 +6,7 @@ let debug = require('debug')('events:main');
 let config = require('typed-env-config');
 let builder = require('./api');
 let taskcluster = require('taskcluster-client');
+let Listeners = require('./listeners.js');
 let _  = require('lodash');
 
 // Create component loader
@@ -27,12 +28,25 @@ let load = loader({
     }),
   },
 
+  listeners : {
+    requires: ['cfg'],
+    setup : async ({cfg}) => {
+      var listeners = new Listeners({
+        credentials: cfg.pulse,
+      });
+
+      // Start a PulseConnection to add listeners
+      await listeners.setup();
+      return listeners;
+    },
+  },
+
   api : {
-    requires: ['cfg', 'monitor'],
-    setup : ({cfg, monitor}) => builder.build({
+    requires: ['cfg', 'monitor', 'listeners'],
+    setup : ({cfg, monitor, listeners}) => builder.build({
       rootUrl:  cfg.taskcluster.rootUrl,
       context:  {
-        connection:  new taskcluster.PulseConnection(cfg.pulse),
+        listeners:  listeners,
       },
       monitor:  monitor.prefix('api'),
     }),

@@ -14,7 +14,7 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-events',
   serviceName: 'events',
   version: 'v1',
-  context: ['connection'],
+  context: ['listeners'],
 });
 
 // Returns JSON.parse(bindings) if everything goes well
@@ -92,33 +92,12 @@ builder.declare({
     headWritten = true;
 
     let json_bindings = await parseAndValidateBindings(req.query.bindings);
+    debug('Bindings parsed');
+    var listener = await this.listeners.createListener(json_bindings);
+    debug('listener created');
     
-    var listener = new taskcluster.PulseListener({
-      prefetch:   5,
-      connection: this.connection,
-      maxLength:  50,
-    });
-    
-    _.forEach(json_bindings, entry => listener.bind({
-      exchange: entry.exchange,
-      routingKeyPattern: entry.routingKey,
-    }));
-    
-    listener.resume().then(
-      () => {sendEvent('ready');}, 
-      (err) => {
-        debug('Can\'t resume listener');
-        abort(err);
-      }
-    );
-
     listener.on('message', message => {
       sendEvent('message', message.payload);
-    });
-
-    listener.on('error', err => {
-      debug('listener Error', err);
-      abort(err);
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -161,7 +140,7 @@ builder.declare({
       clearInterval(pingEvent);
     }
     // Close the listener
-    listener.close();
+    this.listeners.closeListener(listener);
 
     if (!res.finished) {
       debug('Ending response');
