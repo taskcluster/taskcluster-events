@@ -45,7 +45,7 @@ Listeners.prototype.createListener = async function(bindings) {
 
     this.listeners.push(listener);
     await listener.resume();
-    
+
     return listener;
   } catch (err) {
     err.code = 404;
@@ -57,7 +57,7 @@ Listeners.prototype.createListener = async function(bindings) {
 
 /** Close and remove listener from this.listeners */
 Listeners.prototype.closeListener = function(listener) {
-  let removeIndex = this.listeners.map(item => {return item._queueName;}).indexOf(listener._queueName);
+  let removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
   if (removeIndex > -1) {
     listener.close();
     this.listeners.splice(removeIndex, 1);
