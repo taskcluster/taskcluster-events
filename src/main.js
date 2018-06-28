@@ -6,7 +6,7 @@ let debug = require('debug')('events:main');
 let config = require('typed-env-config');
 let builder = require('./api');
 let taskcluster = require('taskcluster-client');
-let Listeners = require('./listeners.js');
+let Listeners = require('./listeners');
 let _  = require('lodash');
 
 // Create component loader
@@ -46,7 +46,7 @@ let load = loader({
     setup : ({cfg, monitor, listeners}) => builder.build({
       rootUrl:  cfg.taskcluster.rootUrl,
       context:  {
-        listeners:  listeners,
+        listeners,
       },
       monitor:  monitor.prefix('api'),
     }),
