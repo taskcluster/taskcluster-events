@@ -11,58 +11,59 @@ var _           = require('lodash');
  *   credentials:        // Pulse credentials
  * }
  */
-var Listeners = function(options) {
-  assert(options.credentials, 'Pulse credentials must be provided');
-
-  this.credentials    = options.credentials;
-  this.connection     = null;
-  this.listeners = null;
-};
-
-/** Setup the PulseConnection */
-Listeners.prototype.setup = function() {
-  debug('Setting up Listeners');
-  assert(this.listeners === null, 'Cannot setup twice');
-
-  this.connection = new taskcluster.PulseConnection(this.credentials);
-  this.listeners = [];
-};
-
-/** Create a new PulseListener instance and add it to this.listeners */
-Listeners.prototype.createListener = async function(bindings) {
-  let listener;
-  try {
-    listener = new taskcluster.PulseListener({
-      prefetch:   5,
-      connection: this.connection,
-      maxLength:  50,
-    });
-
-    _.forEach(bindings, binding => listener.bind({
-      exchange:          binding.exchange,
-      routingKeyPattern: binding.routingKey,  
-    }));
-
-    this.listeners.push(listener);
-    await listener.resume();
-
-    return listener;
-  } catch (err) {
-    err.code = 404;
-    debug(err);
-    this.closeListener(listener);
-    throw err;
+class Listeners {
+  constructor(options) {
+    assert(options.credentials, 'Pulse credentials must be provided');
+    
+    this.credentials = options.credentials;
+    this.connection = null;
+    this.listeners = null;
   }
-};
 
-/** Close and remove listener from this.listeners */
-Listeners.prototype.closeListener = function(listener) {
-  let removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
-  if (removeIndex > -1) {
-    listener.close();
-    this.listeners.splice(removeIndex, 1);
+  /** Setup the PulseConnection */
+  setup() {
+    debug('Setting up Listeners');
+    assert(this.listeners === null, 'Cannot setup twice');
+
+    this.connection = new taskcluster.PulseConnection(this.credentials);
+    this.listeners = [];
   }
-};
 
-// Export Listeners
+  /** Create a new PulseListener instance and add it to this.listeners */
+  async createListener(bindings) {
+    let listener;
+    try {
+      listener = new taskcluster.PulseListener({
+        prefetch:   5,
+        connection: this.connection,
+        maxLength:  50,
+      });
+
+      _.forEach(bindings, binding => listener.bind({
+        exchange:          binding.exchange,
+        routingKeyPattern: binding.routingKey,  
+      }));
+
+      this.listeners.push(listener);
+      await listener.resume();
+
+      return listener;
+    } catch (err) {
+      err.code = 404;
+      debug(err);
+      this.closeListener(listener);
+      throw err;
+    }
+  }
+
+  /** Close and remove listener from this.listeners */
+  closeListener() {
+    let removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
+    if (removeIndex > -1) {
+      listener.close();
+      this.listeners.splice(removeIndex, 1);
+    }
+  }
+}
+
 module.exports = Listeners;
