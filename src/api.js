@@ -95,10 +95,13 @@ builder.declare({
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(json_bindings);
     sendEvent('ready');
-    debug('listener created', listener);
+    const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
+    let idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
     
     listener.on('message', message => {
       sendEvent('message', message.payload);
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);  
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -153,3 +156,4 @@ builder.declare({
 
 // Export api
 module.exports = builder;
+    
