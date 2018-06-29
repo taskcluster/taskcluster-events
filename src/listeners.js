@@ -57,12 +57,20 @@ class Listeners {
   }
 
   /** Close and remove listener from this.listeners */
-  closeListener() {
+  closeListener(listener) {
     let removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
     if (removeIndex > -1) {
       listener.close();
       this.listeners.splice(removeIndex, 1);
     }
+  }
+
+  async terminate() {
+    debug('Terminating Listeners..');
+    if (this.listeners) {
+      _.forEach(this.listeners, listener => this.closeListener(listener));
+    }
+    this.listeners = undefined;
   }
 }
 

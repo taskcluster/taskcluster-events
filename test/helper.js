@@ -34,14 +34,25 @@ helper.rootUrl = 'http://localhost:12345';
 * and add that to helper.listeners .
 */
 exports.withPulse = (mock, skipping) => {
+  let Listener;
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
 
     helper.load.cfg('pulse.fake', true);
-    const Listener = await helper.load('listeners');
+    Listener = await helper.load('listeners');
     helper.listeners = Listener.listeners;
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (Listener) {
+      await Listener.terminate();
+      Listener = null;
+    }
   });
 };
 
