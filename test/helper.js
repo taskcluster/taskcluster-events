@@ -72,9 +72,8 @@ exports.withServer = (mock, skipping) => {
 
     helper.connect = bindings => {
       let json = urlencode(JSON.stringify(bindings));
+      debug('Connecting to api...');
       const evtSource = new EventSource(libUrls.api(helper.rootUrl, 'events', 'v1', '/connect/?bindings=')+json);
-      debug(libUrls.api(helper.rootUrl, 'events', 'v1', '/connect/?bindings')+json);
-      debug('trying to connect to api');
       let pass, fail;
       const resolve = new Promise((resolve, reject) => {
         pass = resolve;
@@ -89,12 +88,6 @@ exports.withServer = (mock, skipping) => {
     };
 
     webServer = await helper.load('server');
-  });
-
-  setup(async function() {
-    if (skipping()) {
-      return;
-    }
   });
 
   suiteTeardown(async function() {
