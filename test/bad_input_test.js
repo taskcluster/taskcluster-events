@@ -12,33 +12,27 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
       {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
     ], foo: 'bar'};
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
-    es.addEventListener('error', (e) => {
-      error = e.data;
-      assert(_.includes(error, 'The json query should have only one key'));
-      es.close();
-      controls.pass();
+    evtSource.addEventListener('error', (e) => {
+      assert(_.includes(e.data, 'The json query should have only one key'));
+      evtSource.close();
+      pass();
     });
-    await controls.resolve;
+    await resolve;
   });
 
   test('Bindings is not an array', async () => {
     let bindings = {bindings : {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'}};
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
-    es.addEventListener('error', (e) => {
-      error = e.data;
-      assert(_.includes(error, 'Bindings must be an array of {exchange, routingKey}'));
-      es.close();
-      controls.pass();
+    evtSource.addEventListener('error', (e) => {
+      assert(_.includes(e.data, 'Bindings must be an array of {exchange, routingKey}'));
+      evtSource.close();
+      pass();
     });
-    await controls.resolve;
+    await resolve;
   });
 
 });

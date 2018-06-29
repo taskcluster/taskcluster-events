@@ -12,11 +12,9 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
       {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
     ]};
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('ready', msg => {
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
+    
+    evtSource.addEventListener('ready', msg => {
       const message = {
         exchange: 'exchange/taskcluster-foo/v1/bar',
         routingKey: 'some.route',
@@ -26,22 +24,22 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
         },
       };
 
-      helper.listeners.slice(-1)[0].fakeMessage(message);
+      _.last(helper.listeners).fakeMessage(message);
     });
 
-    es.addEventListener('message', (msg) => {
+    evtSource.addEventListener('message', (msg) => {
       assert(JSON.parse(msg.data).status === 'fooIsBar');
-      es.close();
-      controls.pass();
+      evtSource.close();
+      pass();
     });
 
-    es.addEventListener('error', (err) => {
-      es.close();
+    evtSource.addEventListener('error', (err) => {
+      evtSource.close();
       assert(false);
-      controls.fail(err);
+      fail(err);
     });
 
-    await controls.resolve;
+    await resolve;
   });
 
   // TODO : use fake time to not actually wait for 20s
@@ -51,24 +49,22 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
     let bindings = {bindings : [ 
       {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
     ]};
+    
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('message', (msg) => {
+    evtSource.addEventListener('message', (msg) => {
       assert(false);
-      es.close();
-      controls.fail();
+      evtSource.close();
+      fail();
     });
 
-    es.addEventListener('error', (err) => {
-      es.close();
+    evtSource.addEventListener('error', (err) => {
+      evtSource.close();
       assert(JSON.parse(err.data) === 'No messages received for 20s. Aborting...');
-      controls.pass();
+      pass();
     });
 
-    await controls.resolve;
+    await resolve;
   });
 
 });
