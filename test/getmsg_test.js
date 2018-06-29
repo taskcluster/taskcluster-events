@@ -9,7 +9,7 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
 
   test('Exchange is correct', async () => {
     let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ]};
 
     let {evtSource, resolve, pass, fail} = helper.connect(bindings);
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
     // Send no messages after connecting. The connection should be 
     // closed automatically after 20s 
     let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ]};
     
     let {evtSource, resolve, pass, fail} = helper.connect(bindings);

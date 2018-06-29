@@ -41,7 +41,7 @@ class Listeners {
 
       _.forEach(bindings, binding => listener.bind({
         exchange:          binding.exchange,
-        routingKeyPattern: binding.routingKey,  
+        routingKeyPattern: binding.routingKeyPattern,  
       }));
 
       this.listeners.push(listener);

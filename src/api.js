@@ -19,8 +19,8 @@ let builder = new APIBuilder({
 
 // Returns JSON.parse(bindings) if everything goes well
 //   {"bindings" : [ 
-//     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
-//     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
+//     {"exchange" :  "a/b/c", "routingKeyPattern" : "a.b.c"},
+//     {"exchange" :  "x/y/z", "routingKeyPattern" : "x.y.z"},
 //   ]};
 var parseAndValidateBindings = function(bindings) {
   return new Promise((resolve, reject) => {
@@ -33,11 +33,11 @@ var parseAndValidateBindings = function(bindings) {
       // Reduce json_bindings to an array of exchanges.
       json_bindings = json_bindings.bindings;
       if (!Array.isArray(json_bindings)) {
-        throw new Error('Bindings must be an array of {exchange, routingKey}');
+        throw new Error('Bindings must be an array of {exchange, routingKeyPattern}');
       }
       _.forEach(json_bindings, binding => {
-        if (!('routingKey' in binding) || !('exchange' in binding)) {
-          throw new Error('Binding must include `exchange` and `routingKey` fields');
+        if (!('routingKeyPattern' in binding) || !('exchange' in binding)) {
+          throw new Error('Binding must include `exchange` and `routingKeyPattern` fields');
         }
       });
       resolve(json_bindings);
