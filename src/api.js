@@ -99,7 +99,7 @@ builder.declare({
     let idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
     
     listener.on('message', message => {
-      sendEvent('message', message.payload);
+      sendEvent('message', message);
       clearTimeout(idleTimeout);
       idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);  
     });

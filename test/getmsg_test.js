@@ -23,12 +23,11 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
           status: 'fooIsBar',
         },
       };
-
       _.last(helper.listeners).fakeMessage(message);
     });
 
     evtSource.addEventListener('message', (msg) => {
-      assert(JSON.parse(msg.data).status === 'fooIsBar');
+      assert(JSON.parse(msg.data).payload.status === 'fooIsBar');
       evtSource.close();
       pass();
     });
