@@ -15,6 +15,9 @@ let builder = new APIBuilder({
   serviceName: 'events',
   version: 'v1',
   context: ['listeners'],
+  errorCodes: {
+    NoReconnects:   204,  // Not supporting automatic reconnects from EventSource
+  },
 });
 
 // Returns JSON.parse(bindings) if everything goes well
@@ -66,7 +69,7 @@ builder.declare({
   // No reconnect on 204 is not yet supported on EventSource.
   // Clients using that need to use es.close() to stop error messages.
   if (req.headers['last-event-id']) {
-    return res.reportError(204, 'Not allowing reconnects');
+    return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
   let abort, headWritten, pingEvent;
