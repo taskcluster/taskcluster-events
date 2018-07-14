@@ -72,7 +72,7 @@ builder.declare({
     return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
-  let abort, headWritten, pingEvent;
+  let abort, headWritten, pingEvent, idleTimeout;
   const aborted = new Promise((resolve, reject) => abort = reject);
 
   const sendEvent = (kind, data={}) => {
@@ -100,7 +100,7 @@ builder.declare({
     var listener = await this.listeners.createListener(json_bindings);
     sendEvent('ready');
     const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
-    let idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
+    idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
     
     listener.on('message', message => {
       sendEvent('message', message);
@@ -142,6 +142,10 @@ builder.declare({
     debug('Error message : ', errorMessage);
     sendEvent('error', errorMessage);
   } finally {
+
+    if (idleTimeout) {
+      clearInterval(idleTimeout);
+    }
 
     if (pingEvent) {
       debug('unping');
