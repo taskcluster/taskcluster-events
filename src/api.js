@@ -69,11 +69,13 @@ builder.declare({
   // No reconnect on 204 is not yet supported on EventSource.
   // Clients using that need to use es.close() to stop error messages.
   if (req.headers['last-event-id']) {
+    debug('no reconnect');
     return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
   let abort, headWritten, pingEvent, idleTimeout;
   const aborted = new Promise((resolve, reject) => abort = reject);
+  const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
 
   const sendEvent = (kind, data={}) => {
     try {
@@ -98,10 +100,14 @@ builder.declare({
     let json_bindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(json_bindings);
-    sendEvent('ready');
-    const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
-    idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
-    
+
+    listener.resume().then(() => {
+      sendEvent('ready');
+      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
+    }, (err) => {
+      abort(err);
+    });
+        
     listener.on('message', message => {
       sendEvent('message', message);
       clearTimeout(idleTimeout);
