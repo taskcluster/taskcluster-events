@@ -77,6 +77,13 @@ builder.declare({
   const aborted = new Promise((resolve, reject) => abort = reject);
   const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
 
+  const createIdleTimeout = () => {
+    if (idleTimeout) {
+      clearTimeout(idleTimeout);
+    }
+    idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
+  };
+
   const sendEvent = (kind, data={}) => {
     try {
       const event = `event: ${kind}\ndata: ${JSON.stringify(data)}\nid: -\n\n`;
@@ -93,7 +100,6 @@ builder.declare({
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Access-Control-Allow-Origin': '*',
     });
     headWritten = true;
 
@@ -103,15 +109,14 @@ builder.declare({
 
     listener.resume().then(() => {
       sendEvent('ready');
-      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
+      createIdleTimeout();
     }, (err) => {
       abort(err);
     });
         
     listener.on('message', message => {
       sendEvent('message', message);
-      clearTimeout(idleTimeout);
-      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);  
+      createIdleTimeout();
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -150,7 +155,7 @@ builder.declare({
   } finally {
 
     if (idleTimeout) {
-      clearInterval(idleTimeout);
+      clearTimeout(idleTimeout);
     }
 
     if (pingEvent) {
