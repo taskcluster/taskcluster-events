@@ -16,7 +16,7 @@ let builder = new APIBuilder({
   version: 'v1',
   context: ['listeners'],
   errorCodes: {
-    NoReconnects:   204,  // Not supporting automatic reconnects from EventSource
+    NoReconnects: 204,  // Not supporting automatic reconnects from EventSource
   },
 });
 
@@ -63,13 +63,12 @@ builder.declare({
   // Add input validation yml
   title: 'Events-Api',
 }, async function(req, res) {
-  debug('hello');
 
   // If the last event id is '-', send a 204 error blocking all reconnects.
   // No reconnect on 204 is not yet supported on EventSource.
   // Clients using that need to use es.close() to stop error messages.
   if (req.headers['last-event-id']) {
-    debug('no reconnect');
+    debug('no reconnects allowed');
     return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
@@ -88,9 +87,8 @@ builder.declare({
     try {
       const event = `event: ${kind}\ndata: ${JSON.stringify(data)}\nid: -\n\n`;
       res.write(event);
-      debug('..sendEvent', event); 
+      debug('sending event : ', kind); 
     } catch (err) {
-      debug('Error in sendEvent:');
       abort(err);
     }
   };
@@ -133,7 +131,7 @@ builder.declare({
     ]);
 
   } catch (err) {
-    debug('Error : %j', err.message, err.code);
+    debug('Error : %j', err.code, err.message);
     var errorMessage = 'Unknown Internal Error';
     if (err.code === 404) {
       errorMessage = err.message;
@@ -150,7 +148,6 @@ builder.declare({
 
     // TODO : Find a suitable error message depending on err.
     // Most likely these will be PulseListener errors.
-    debug('Error message : ', errorMessage);
     sendEvent('error', errorMessage);
   } finally {
 
@@ -159,7 +156,6 @@ builder.declare({
     }
 
     if (pingEvent) {
-      debug('unping');
       clearInterval(pingEvent);
     }
     // Close the listener
