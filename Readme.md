@@ -39,7 +39,9 @@ listener.addEventListener('message', msg => {
 listener.close();
 ```
 The connection is closed by the server if no pulse messages have been received for more than 20 seconds.
-We reject [automatic reconnect](https://www.w3.org/TR/2009/WD-eventsource-20090421/#reset-the-connection) attempts by `EventSource`. The client can force this by closing and restarting the listener.
+The `eventsource` in that case [tries to reconnect](https://www.w3.org/TR/2009/WD-eventsource-20090421/#reset-the-connection) which is rejected by the server. Even in cases of wrongly formatted query parameter the reconnect is attempted after the connection is closed with a `404`. Thus it makes sense to disable these reconnects altogether.
+
+This is done by setting the `id` of each event to `-` and returning `204 : No input` when `Last-Event-Id : -` is sent in the request headers.The client can however, force it by closing and restarting the listener.
 
 
 ## Testing
