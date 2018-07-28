@@ -72,16 +72,8 @@ builder.declare({
     return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
-  let abort, headWritten, pingEvent, idleTimeout;
+  let abort, headWritten, pingEvent;
   const aborted = new Promise((resolve, reject) => abort = reject);
-  const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
-
-  const createIdleTimeout = () => {
-    if (idleTimeout) {
-      clearTimeout(idleTimeout);
-    }
-    idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
-  };
 
   const sendEvent = (kind, data={}) => {
     try {
@@ -107,19 +99,17 @@ builder.declare({
 
     listener.resume().then(() => {
       sendEvent('ready');
-      createIdleTimeout();
     }, (err) => {
       abort(err);
     });
         
     listener.on('message', message => {
       sendEvent('message', message);
-      createIdleTimeout();
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
       time: new Date(),
-    }), 3 * 1000);
+    }), 20 * 1000);
 
     await Promise.all([
       aborted,
@@ -150,10 +140,6 @@ builder.declare({
     // Most likely these will be PulseListener errors.
     sendEvent('error', errorMessage);
   } finally {
-
-    if (idleTimeout) {
-      clearTimeout(idleTimeout);
-    }
 
     if (pingEvent) {
       clearInterval(pingEvent);
