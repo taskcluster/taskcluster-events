@@ -28,22 +28,22 @@ let builder = new APIBuilder({
 var parseAndValidateBindings = function(bindings) {
   return new Promise((resolve, reject) => {
     try {
-      let json_bindings = JSON.parse(bindings);
-      if (String(Object.keys(json_bindings)) !== 'bindings') {
+      let jsonBindings = JSON.parse(bindings);
+      if (String(Object.keys(jsonBindings)) !== 'bindings') {
         throw new Error('The json query should have only one key i.e. `bindings`.');
       }  
 
-      // Reduce json_bindings to an array of exchanges.
-      json_bindings = json_bindings.bindings;
-      if (!Array.isArray(json_bindings)) {
+      // Reduce jsonBindings to an array of exchanges.
+      jsonBindings = jsonBindings.bindings;
+      if (!Array.isArray(jsonBindings)) {
         throw new Error('Bindings must be an array of {exchange, routingKeyPattern}');
       }
-      _.forEach(json_bindings, binding => {
+      _.forEach(jsonBindings, binding => {
         if (!('routingKeyPattern' in binding) || !('exchange' in binding)) {
           throw new Error('Binding must include `exchange` and `routingKeyPattern` fields');
         }
       });
-      resolve(json_bindings);
+      resolve(jsonBindings);
     } catch (e) {
       // A 404 code is required to send the error message without leaking internal information
       reject({code:404, message:e.message});
@@ -93,9 +93,9 @@ builder.declare({
     });
     headWritten = true;
 
-    let json_bindings = await parseAndValidateBindings(req.query.bindings);
+    let jsonBindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
-    var listener = await this.listeners.createListener(json_bindings);
+    var listener = await this.listeners.createListener(jsonBindings);
 
     listener.resume().then(() => {
       sendEvent('ready');
