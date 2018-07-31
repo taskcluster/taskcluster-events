@@ -73,7 +73,13 @@ exports.withServer = (mock, skipping) => {
     helper.connect = bindings => {
       let jsonBindings = urlencode(JSON.stringify(bindings));
       debug('Connecting to api...');
-      const evtSource = new EventSource(libUrls.api(helper.rootUrl, 'events', 'v1', '/connect/?bindings=')+jsonBindings);
+      const evtSource = new EventSource(libUrls.api(
+        helper.rootUrl,
+        'events',
+        'v1',
+        `/connect/?bindings=${jsonBindings}`
+      ));
+      console.log(evtSource);
       let pass, fail;
       const resolve = new Promise((resolve, reject) => {
         pass = resolve;
