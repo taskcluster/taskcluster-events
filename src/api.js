@@ -1,10 +1,10 @@
-let debug = require('debug')('events:api');
-let APIBuilder = require('taskcluster-lib-api');
-let taskcluster = require('taskcluster-client');
-let uuid = require('uuid');
-let _ = require('lodash');
+const debug = require('debug')('events:api');
+const APIBuilder = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
+const uuid = require('uuid');
+const _ = require('lodash');
 
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'AMQP Messages API Documentation',
   description: [
     'This service is responsible for making pulse messages accessible',
@@ -93,7 +93,7 @@ builder.declare({
     });
     headWritten = true;
 
-    let jsonBindings = await parseAndValidateBindings(req.query.bindings);
+    const jsonBindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(jsonBindings);
 

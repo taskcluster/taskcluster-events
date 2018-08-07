@@ -71,7 +71,7 @@ exports.withServer = (mock, skipping) => {
     exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
     helper.connect = bindings => {
-      let jsonBindings = urlencode(JSON.stringify(bindings));
+      const jsonBindings = urlencode(JSON.stringify(bindings));
       debug('Connecting to api...');
       const evtSource = new EventSource(libUrls.api(
         helper.rootUrl,
