@@ -1,6 +1,6 @@
 test:
    pulse:
-    username:       !env PULSE_USERNAME
-    password:       !env PULSE_PASSWORD
-    hostname:       !env PULSE_HOSTNAME
-    vhost:          !env PULSE_VHOST
+    username:       '...'
+    password:       '...'
+    hostname:       '...'
+    vhost:          '...'
