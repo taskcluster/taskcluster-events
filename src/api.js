@@ -118,7 +118,8 @@ builder.declare({
         debug('PulseListener Error : '. err);
         reject(err);
       })),
-    ]);
+    ]).catch(error => {
+    });
 
   } catch (err) {
     debug('Error : %j', err.code, err.message);
@@ -132,7 +133,7 @@ builder.declare({
     // Send 5xx error code otherwise. Make sure that the head is not written.
     // The response code can be set only once.
     if (!headWritten) {
-      res.reportError(500, 'Something went wrong. Make another request to retry.');
+      return res.reportError(500, 'Something went wrong. Make another request to retry.');
     }
 
     // If head is written, send an error event.

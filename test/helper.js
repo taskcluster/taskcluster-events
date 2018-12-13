@@ -79,7 +79,6 @@ exports.withServer = (mock, skipping) => {
         'v1',
         `/connect/?bindings=${jsonBindings}`
       ));
-      console.log(evtSource);
       let pass, fail;
       const resolve = new Promise((resolve, reject) => {
         pass = resolve;
